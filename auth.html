@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>مُطابق — الدخول</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Readex+Pro:wght@400;500;600;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root{
+    --bg:#EBEEF3;--ink:#19212E;--navy:#1B2A4A;--navy-2:#28406E;--teal:#1F9D8C;
+    --card:#FFFFFF;--line:#D8DEE7;--muted:#5E6B7E;--band-red:#D64A4A;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{
+    font-family:"IBM Plex Sans Arabic",system-ui,sans-serif;color:var(--ink);
+    background:
+      radial-gradient(1200px 500px at 80% -10%, rgba(31,157,140,.18), transparent 60%),
+      radial-gradient(900px 500px at -10% 110%, rgba(40,64,110,.20), transparent 55%),
+      var(--navy);
+    min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:20px;
+  }
+  h1,h2,h3{font-family:"Readex Pro",sans-serif;margin:0;line-height:1.25}
+
+  .card{width:100%;max-width:420px;background:var(--card);border-radius:20px;
+    box-shadow:0 1px 2px rgba(0,0,0,.06),0 30px 60px rgba(10,18,38,.35);overflow:hidden}
+  .top{padding:26px 28px 6px;text-align:center}
+  .brand{display:inline-flex;align-items:center;gap:10px;margin-bottom:4px}
+  .logo{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--teal),#15c3ab);position:relative;flex:none}
+  .logo::after{content:"";position:absolute;inset:11px auto auto 11px;width:11px;height:11px;border-radius:3px;background:var(--navy)}
+  .brand b{font-family:"Readex Pro";font-weight:700;font-size:22px;color:var(--navy)}
+  .brand span{display:block;font-size:11px;color:var(--muted);margin-top:-2px}
+  .title{font-size:18px;color:var(--navy);margin-top:14px}
+  .subtitle{font-size:12.5px;color:var(--muted);margin-top:4px}
+
+  .body{padding:18px 28px 26px}
+
+  .tabs{display:flex;background:#EEF1F5;border-radius:12px;padding:4px;margin-bottom:18px}
+  .tab{flex:1;border:none;background:none;cursor:pointer;font-family:"Readex Pro";font-weight:600;
+    font-size:13.5px;color:var(--muted);padding:9px;border-radius:9px}
+  .tab.active{background:#fff;color:var(--navy);box-shadow:0 1px 3px rgba(27,42,74,.12)}
+
+  label{display:block;font-size:12.5px;font-weight:600;margin:0 0 6px;color:var(--ink)}
+  .field{margin-bottom:14px}
+  input{width:100%;font-family:inherit;font-size:15px;border:1px solid var(--line);
+    border-radius:11px;padding:12px 13px;background:#fff;transition:border .15s,box-shadow .15s}
+  input:focus{outline:none;border-color:var(--teal);box-shadow:0 0 0 3px rgba(31,157,140,.15)}
+  input[dir=ltr]{direction:ltr;text-align:left}
+
+  .row-between{display:flex;justify-content:flex-end;margin:-4px 0 14px}
+  .link{background:none;border:none;cursor:pointer;color:var(--teal);font-family:inherit;font-size:12.5px;font-weight:600;padding:0}
+  .link:hover{text-decoration:underline}
+
+  .btn{width:100%;border:none;cursor:pointer;border-radius:12px;padding:13px;
+    font-family:"Readex Pro";font-weight:600;font-size:15px;display:flex;align-items:center;justify-content:center;gap:8px}
+  .btn-primary{background:var(--navy);color:#fff}
+  .btn-primary:hover{background:#142036}
+  .btn-primary:disabled{opacity:.6;cursor:default}
+
+  .sep{display:flex;align-items:center;gap:12px;color:var(--muted);font-size:12px;margin:18px 0}
+  .sep::before,.sep::after{content:"";flex:1;height:1px;background:var(--line)}
+
+  .oauth{display:flex;flex-direction:column;gap:10px}
+  .btn-oauth{width:100%;border:1px solid var(--line);background:#fff;cursor:pointer;border-radius:12px;
+    padding:11px;font-family:"Readex Pro";font-weight:600;font-size:14px;color:var(--ink);
+    display:flex;align-items:center;justify-content:center;gap:10px}
+  .btn-oauth:hover{background:#F7F9FB}
+  .btn-oauth svg{width:18px;height:18px;flex:none}
+
+  .msg{margin-top:16px;font-size:13px;padding:11px 13px;border-radius:10px;line-height:1.6;display:none}
+  .msg.show{display:block}
+  .msg.err{background:rgba(214,74,74,.1);color:#b23b3b}
+  .msg.ok{background:rgba(31,157,140,.12);color:#1c7d6f}
+  .msg.warn{background:rgba(224,161,46,.14);color:#9a6b13}
+
+  .foot{text-align:center;font-size:11px;color:var(--muted);padding:0 28px 22px;line-height:1.7}
+  .hidden{display:none}
+  .spin{width:16px;height:16px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:sp .7s linear infinite}
+  @keyframes sp{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="top">
+      <div class="brand"><span class="logo"></span><div><b>مُطابق</b><span>لوحة قيادة الامتثال</span></div></div>
+      <h2 class="title" id="title">تسجيل الدخول</h2>
+      <p class="subtitle" id="subtitle">ادخل إلى لوحة امتثال منشأتك</p>
+    </div>
+
+    <div class="body">
+      <div class="tabs" id="tabs">
+        <button class="tab active" data-mode="signin" onclick="setMode('signin')">دخول</button>
+        <button class="tab" data-mode="signup" onclick="setMode('signup')">إنشاء حساب</button>
+      </div>
+
+      <div class="field hidden" id="nameField">
+        <label for="fullName">الاسم</label>
+        <input id="fullName" type="text" placeholder="اسمك أو اسم المنشأة">
+      </div>
+
+      <div class="field">
+        <label for="email">البريد الإلكتروني</label>
+        <input id="email" type="email" dir="ltr" placeholder="you@email.com" autocomplete="email">
+      </div>
+
+      <div class="field" id="passField">
+        <label for="password">كلمة المرور</label>
+        <input id="password" type="password" dir="ltr" placeholder="••••••••" autocomplete="current-password">
+      </div>
+
+      <div class="row-between" id="forgotRow">
+        <button class="link" onclick="setMode('reset')">نسيت كلمة المرور؟</button>
+      </div>
+
+      <button class="btn btn-primary" id="submitBtn" onclick="submitForm()">
+        <span id="submitLabel">دخول</span>
+      </button>
+
+      <div id="oauthBlock">
+        <div class="sep">أو تابع عبر</div>
+        <div class="oauth">
+          <button class="btn-oauth" onclick="oauth('google')">
+            <svg viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9 3.6l6.7-6.7C35.6 2.6 30.2 0 24 0 14.6 0 6.4 5.4 2.5 13.3l7.9 6.1C12.2 13.3 17.6 9.5 24 9.5z"/><path fill="#4285F4" d="M46.1 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.4c-.5 2.9-2.1 5.3-4.6 7l7.1 5.5c4.2-3.9 6.6-9.6 6.6-17z"/><path fill="#FBBC05" d="M10.4 28.6c-.5-1.4-.7-2.9-.7-4.6s.3-3.2.7-4.6l-7.9-6.1C.9 16.5 0 20.1 0 24s.9 7.5 2.5 10.7l7.9-6.1z"/><path fill="#34A853" d="M24 48c6.2 0 11.4-2 15.2-5.5l-7.1-5.5c-2 1.3-4.6 2.1-8.1 2.1-6.4 0-11.8-3.8-13.6-9.1l-7.9 6.1C6.4 42.6 14.6 48 24 48z"/></svg>
+            المتابعة عبر Google
+          </button>
+          <button class="btn-oauth" onclick="oauth('apple')">
+            <svg viewBox="0 0 24 24"><path fill="#111" d="M16.4 12.7c0-2.3 1.9-3.4 2-3.5-1.1-1.6-2.8-1.8-3.4-1.8-1.5-.2-2.8.8-3.5.8-.7 0-1.8-.8-3-.8-1.5 0-2.9.9-3.7 2.3-1.6 2.7-.4 6.8 1.1 9 .7 1.1 1.6 2.3 2.8 2.3 1.1 0 1.5-.7 2.9-.7 1.3 0 1.7.7 2.9.7 1.2 0 2-1.1 2.7-2.2.8-1.2 1.2-2.4 1.2-2.5-.1 0-2.3-.9-2.3-3.6zM14.2 5.6c.6-.8 1-1.8.9-2.9-.9 0-2 .6-2.6 1.3-.6.7-1.1 1.7-.9 2.7 1 .1 2-.5 2.6-1.1z"/></svg>
+            المتابعة عبر Apple
+          </button>
+        </div>
+      </div>
+
+      <div class="msg" id="msg"></div>
+    </div>
+
+    <div class="foot">
+      بدخولك توافق على شروط الاستخدام وسياسة الخصوصية.<br>
+      © 2026 مُطابق — لوحة قيادة الامتثال
+    </div>
+  </div>
+
+<script>
+// ====== إعداد Supabase: ضع قيم مشروعك هنا (Settings → API) ======
+const SUPABASE_URL = "https://YOUR-PROJECT.supabase.co";
+const SUPABASE_ANON_KEY = "YOUR-ANON-KEY";
+const AFTER_LOGIN = "/";   // إلى أين نوجّه بعد الدخول (اللوحة)
+// =================================================================
+
+let mode = "signin";
+let sb = null;
+const configured = !SUPABASE_URL.includes("YOUR-PROJECT") && !SUPABASE_ANON_KEY.includes("YOUR-ANON");
+
+try { if (window.supabase && configured) sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); }
+catch (e) { /* يُعالَج عند الإرسال */ }
+
+const $ = (id) => document.getElementById(id);
+
+function showMsg(text, kind){
+  const m = $("msg");
+  m.textContent = text;
+  m.className = "msg show " + (kind || "err");
+}
+function clearMsg(){ $("msg").className = "msg"; }
+
+function setMode(m){
+  mode = m;
+  clearMsg();
+  document.querySelectorAll(".tab").forEach(t => t.classList.toggle("active", t.dataset.mode === m));
+  const showTabs = (m === "signin" || m === "signup");
+  $("tabs").classList.toggle("hidden", !showTabs);
+  $("nameField").classList.toggle("hidden", m !== "signup");
+  $("passField").classList.toggle("hidden", m === "reset");
+  $("forgotRow").classList.toggle("hidden", m !== "signin");
+  $("oauthBlock").classList.toggle("hidden", m === "reset");
+
+  if (m === "signin"){ $("title").textContent = "تسجيل الدخول"; $("subtitle").textContent = "ادخل إلى لوحة امتثال منشأتك"; $("submitLabel").textContent = "دخول"; }
+  if (m === "signup"){ $("title").textContent = "إنشاء حساب"; $("subtitle").textContent = "ابدأ بمتابعة امتثال منشأتك"; $("submitLabel").textContent = "إنشاء الحساب"; }
+  if (m === "reset"){ $("title").textContent = "استعادة كلمة المرور"; $("subtitle").textContent = "سنرسل لك رابط إعادة التعيين"; $("submitLabel").textContent = "إرسال الرابط"; }
+}
+
+function validEmail(e){ return /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e); }
+
+function ensureReady(){
+  if (!window.supabase){ showMsg("تعذّر تحميل مكتبة Supabase — تحقّق من الاتصال.", "err"); return false; }
+  if (!configured){ showMsg("أضف رابط مشروع Supabase ومفتاح anon في أعلى الملف لتفعيل الدخول.", "warn"); return false; }
+  if (!sb){ try { sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); } catch(e){ showMsg("إعداد Supabase غير صحيح.", "err"); return false; } }
+  return true;
+}
+
+function loading(on){
+  const b = $("submitBtn");
+  b.disabled = on;
+  b.innerHTML = on ? '<span class="spin"></span>' : '<span id="submitLabel"></span>';
+  if (!on) setMode(mode);
+}
+
+async function submitForm(){
+  clearMsg();
+  const email = $("email").value.trim();
+  if (!validEmail(email)){ showMsg("أدخل بريداً إلكترونياً صحيحاً."); return; }
+  if (!ensureReady()) return;
+
+  try {
+    loading(true);
+
+    if (mode === "reset"){
+      const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin });
+      if (error) throw error;
+      showMsg("أُرسل رابط استعادة كلمة المرور إلى بريدك.", "ok");
+      loading(false); return;
+    }
+
+    const password = $("password").value;
+    if (password.length < 6){ showMsg("كلمة المرور يجب ألا تقل عن ٦ أحرف."); loading(false); return; }
+
+    if (mode === "signup"){
+      const full_name = $("fullName").value.trim();
+      const { data, error } = await sb.auth.signUp({ email, password, options: { data: { full_name } } });
+      if (error) throw error;
+      if (data.session){ window.location.href = AFTER_LOGIN; return; }
+      showMsg("تم إنشاء الحساب. تحقّق من بريدك لتأكيد الحساب ثم ادخل.", "ok");
+      loading(false); return;
+    }
+
+    // signin
+    const { error } = await sb.auth.signInWithPassword({ email, password });
+    if (error) throw error;
+    window.location.href = AFTER_LOGIN;
+
+  } catch (err) {
+    loading(false);
+    const map = {
+      "Invalid login credentials": "بيانات الدخول غير صحيحة.",
+      "User already registered": "هذا البريد مسجّل مسبقاً — جرّب الدخول.",
+      "Email not confirmed": "لم يُؤكَّد بريدك بعد — تحقّق من رسالة التأكيد."
+    };
+    showMsg(map[err && err.message] || (err && err.message) || "حدث خطأ، حاول مجدداً.");
+  }
+}
+
+async function oauth(provider){
+  clearMsg();
+  if (!ensureReady()) return;
+  try {
+    const { error } = await sb.auth.signInWithOAuth({ provider, options: { redirectTo: window.location.origin + AFTER_LOGIN } });
+    if (error) throw error;
+  } catch (err){
+    showMsg((err && err.message) || "تعذّر بدء الدخول عبر " + provider + ".");
+  }
+}
+
+// لو رجع المستخدم وجلسته فعّالة، وجّهه للّوحة
+(async () => {
+  if (sb){
+    try { const { data } = await sb.auth.getSession(); if (data && data.session){ /* جلسة قائمة */ } } catch(e){}
+  } else if (!configured){
+    showMsg("وضع المعاينة: أضف مفتاحَي Supabase لتفعيل الدخول الفعلي.", "warn");
+  }
+})();
+
+setMode("signin");
+</script>
+</body>
+</html>

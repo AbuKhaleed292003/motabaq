@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>مُطابق — تقرير امتثال المنشأة</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Readex+Pro:wght@400;500;600;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#EBEEF3;--ink:#19212E;--navy:#1B2A4A;--navy-2:#28406E;--teal:#1F9D8C;
+    --card:#FFFFFF;--line:#D8DEE7;--muted:#5E6B7E;
+    --band-red:#D64A4A;--band-low:#86B96B;--band-mid:#3F9D5A;--band-high:#1F7A45;--band-plat:#5C6B82;
+    --amber:#E0A12E;--wa:#25D366;
+    --shadow:0 1px 2px rgba(27,42,74,.05),0 18px 46px rgba(27,42,74,.14);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--bg);color:var(--ink);font-family:"IBM Plex Sans Arabic",system-ui,sans-serif;font-size:15px;line-height:1.7;-webkit-font-smoothing:antialiased}
+  h1,h2,h3,h4{font-family:"Readex Pro",sans-serif;line-height:1.25;margin:0}
+
+  /* ===== toolbar (screen only) ===== */
+  .toolbar{position:sticky;top:0;z-index:20;background:var(--navy);color:#EDF1F7;display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:12px 18px}
+  .tlogo{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,var(--teal),#15c3ab);position:relative;flex:none}
+  .tlogo::after{content:"";position:absolute;inset:9px auto auto 9px;width:9px;height:9px;border-radius:2px;background:var(--navy)}
+  .toolbar b{font-family:"Readex Pro";font-weight:700;font-size:17px}
+  .toolbar .sub{color:#9DB0CC;font-size:12.5px;margin-inline-start:-6px}
+  .spacer{flex:1}
+  .csel{background:#24355A;color:#EDF1F7;border:1px solid #3A4E78;border-radius:9px;padding:9px 12px;font-family:inherit;font-size:13.5px;cursor:pointer}
+  .btn{border:none;cursor:pointer;font-family:"Readex Pro";font-weight:600;font-size:13.5px;border-radius:9px;padding:10px 16px;display:inline-flex;align-items:center;gap:7px}
+  .btn.print{background:var(--teal);color:#fff}
+  .btn.send{background:var(--navy-2);color:#fff}
+  .btn.ghost{background:#EEF1F5;color:var(--navy)}
+  .btn.wa{background:var(--wa);color:#fff;text-decoration:none}
+  .hint{max-width:820px;margin:14px auto 0;padding:0 16px;color:var(--muted);font-size:12.5px;text-align:center}
+
+  /* ===== the A4 sheet ===== */
+  .sheet{background:#fff;width:820px;max-width:calc(100% - 24px);margin:22px auto;box-shadow:var(--shadow);border-radius:14px;overflow:hidden}
+
+  .head{background:var(--navy);color:#EDF1F7;padding:22px 30px;position:relative;overflow:hidden}
+  .head::before{content:"";position:absolute;inset:auto -60px -90px auto;width:230px;height:230px;border-radius:50%;background:radial-gradient(circle at 30% 30%,rgba(31,157,140,.55),transparent 65%)}
+  .head .row{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;position:relative;z-index:1}
+  .hlogo{display:flex;align-items:center;gap:11px}
+  .hlogo .mk{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,var(--teal),#15c3ab);position:relative;flex:none}
+  .hlogo .mk::after{content:"";position:absolute;inset:12px auto auto 12px;width:11px;height:11px;border-radius:3px;background:var(--navy)}
+  .hlogo b{font-family:"Readex Pro";font-weight:700;font-size:21px;display:block}
+  .hlogo span{color:#9DB0CC;font-size:11.5px}
+  .doc-t{text-align:left}
+  .doc-t .k{font-family:"Readex Pro";font-weight:700;font-size:16px;color:#fff}
+  .doc-t .ref{color:#9DB0CC;font-size:11.5px;margin-top:3px;letter-spacing:.3px}
+  .estab{position:relative;z-index:1;margin-top:18px;padding-top:16px;border-top:1px solid rgba(255,255,255,.13);display:flex;flex-wrap:wrap;gap:10px 26px}
+  .estab .f{font-size:11.5px;color:#9DB0CC}
+  .estab .f b{display:block;font-family:"IBM Plex Sans Arabic";font-weight:600;color:#fff;font-size:14px;margin-top:2px}
+
+  .body{padding:26px 30px 22px}
+  .sect-h{display:flex;align-items:center;gap:9px;margin:0 0 14px}
+  .sect-h .bar{width:4px;height:17px;border-radius:3px;background:var(--teal)}
+  .sect-h h3{font-size:15px;color:var(--navy)}
+  .sect{margin-top:24px}
+
+  /* hero: score + summary */
+  .hero{display:grid;grid-template-columns:200px 1fr;gap:24px;align-items:center}
+  .ring-wrap{display:flex;flex-direction:column;align-items:center;gap:8px}
+  .ring{position:relative;width:168px;height:168px}
+  .ring svg{transform:rotate(-90deg)}
+  .ring .ctr{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+  .ring .ctr .n{font-family:"Readex Pro";font-weight:700;font-size:46px;line-height:1;color:var(--ink)}
+  .ring .ctr .d{font-size:12px;color:var(--muted);margin-top:2px}
+  .score-tag{font-family:"Readex Pro";font-weight:700;font-size:15px;padding:5px 16px;border-radius:99px;color:#fff}
+
+  .sumgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:11px}
+  .stat{border:1px solid var(--line);border-radius:12px;padding:13px 15px;background:#FbFcFd}
+  .stat .lbl{font-size:11.5px;color:var(--muted)}
+  .stat .v{font-family:"Readex Pro";font-weight:700;font-size:21px;color:var(--navy);margin-top:3px;display:flex;align-items:baseline;gap:5px}
+  .stat .v small{font-size:12px;font-weight:600;color:var(--muted)}
+  .stat.warn .v{color:var(--amber)} .stat.risk .v{color:var(--band-red)} .stat.ok .v{color:var(--band-mid)}
+
+  /* authority cards */
+  .auth-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:13px}
+  .auth{border:1px solid var(--line);border-radius:13px;padding:15px 16px;position:relative;background:#fff}
+  .auth::before{content:"";position:absolute;inset-inline-start:0;top:14px;bottom:14px;width:3.5px;border-radius:3px;background:var(--mark,#ccc)}
+  .auth .ah{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:10px}
+  .auth .ah .t{font-family:"Readex Pro";font-weight:700;font-size:14px;color:var(--navy)}
+  .auth .ah .o{font-size:10.5px;color:var(--muted);margin-top:2px}
+  .chip{font-family:"Readex Pro";font-weight:600;font-size:11px;padding:4px 10px;border-radius:99px;white-space:nowrap;flex:none;display:inline-flex;align-items:center;gap:4px}
+  .auth .lines{display:flex;flex-direction:column;gap:6px}
+  .auth .ln{display:flex;justify-content:space-between;gap:10px;font-size:12.5px;border-bottom:1px dashed #E7EBF1;padding-bottom:6px}
+  .auth .ln:last-child{border-bottom:none;padding-bottom:0}
+  .auth .ln .k{color:var(--muted)} .auth .ln .val{font-weight:600;color:var(--ink);text-align:left}
+  .auth .nt{margin-top:10px;font-size:11.5px;color:var(--muted);background:#F4F6F9;border-radius:8px;padding:7px 10px}
+
+  /* deadlines */
+  .timeline{display:flex;flex-direction:column;gap:0}
+  .tl{display:flex;align-items:center;gap:13px;padding:11px 0;border-bottom:1px solid var(--line)}
+  .tl:last-child{border-bottom:none}
+  .tl .dot{width:11px;height:11px;border-radius:50%;flex:none;box-shadow:0 0 0 4px rgba(0,0,0,.04)}
+  .tl .lab{flex:1;font-size:13px;font-weight:600;color:var(--ink)}
+  .tl .lab small{display:block;font-weight:400;color:var(--muted);font-size:11.5px;margin-top:1px}
+  .tl .when{font-family:"Readex Pro";font-weight:700;font-size:13px;text-align:left;white-space:nowrap}
+
+  /* actions */
+  .actions{display:flex;flex-direction:column;gap:9px}
+  .act{display:flex;gap:11px;align-items:flex-start;border:1px solid var(--line);border-radius:11px;padding:11px 14px}
+  .act .pr{font-family:"Readex Pro";font-weight:700;font-size:10px;padding:3px 9px;border-radius:6px;flex:none;margin-top:1px}
+  .act .pr.high{background:rgba(214,74,74,.12);color:var(--band-red)}
+  .act .pr.med{background:rgba(224,161,46,.14);color:#B9831F}
+  .act .tx{font-size:13px;color:var(--ink)}
+
+  .foot{border-top:1px solid var(--line);margin:26px 30px 0;padding:16px 0 24px;display:flex;align-items:flex-start;justify-content:space-between;gap:18px;flex-wrap:wrap}
+  .foot .note{font-size:10.5px;color:var(--muted);max-width:62%;line-height:1.6}
+  .seal{display:flex;align-items:center;gap:9px;flex:none}
+  .seal .mk{width:26px;height:26px;border-radius:7px;background:linear-gradient(135deg,var(--teal),#15c3ab);position:relative}
+  .seal .mk::after{content:"";position:absolute;inset:8px auto auto 8px;width:8px;height:8px;border-radius:2px;background:var(--navy)}
+  .seal .tx{font-size:10.5px;color:var(--muted)} .seal .tx b{display:block;font-family:"Readex Pro";color:var(--navy);font-size:12.5px}
+
+  @media (max-width:680px){
+    .hero{grid-template-columns:1fr;justify-items:center;text-align:center}
+    .sumgrid{width:100%} .auth-grid{grid-template-columns:1fr}
+    .doc-t{text-align:right} .foot .note{max-width:100%}
+  }
+
+  /* ===== send modal (screen only) ===== */
+  .modal{position:fixed;inset:0;background:rgba(19,33,46,.5);display:flex;align-items:center;justify-content:center;z-index:50;padding:18px}
+  .modal[hidden]{display:none}
+  .modal-card{background:#fff;border-radius:16px;padding:24px;max-width:380px;width:100%;box-shadow:var(--shadow)}
+  .modal-card h3{color:var(--navy);font-size:17px;margin-bottom:6px}
+  .modal-card .mp{color:var(--muted);font-size:12.5px;margin:0 0 16px;line-height:1.6}
+  .modal-card label{display:block;font-size:12.5px;font-weight:600;color:var(--ink);margin-bottom:6px}
+  .modal-card input{width:100%;font-family:inherit;font-size:15px;border:1px solid var(--line);border-radius:10px;padding:11px 12px;direction:ltr;text-align:left}
+  .modal-card input:focus{outline:2px solid var(--teal);border-color:transparent}
+  .modal-actions{display:flex;gap:10px;justify-content:flex-start;margin-top:18px}
+  .sendmsg{margin-top:14px;font-size:13px;padding:10px 12px;border-radius:9px;line-height:1.6}
+  .sendmsg[hidden]{display:none}
+  .sendmsg.ok{background:rgba(31,157,140,.1);color:#1c7d6f}
+  .sendmsg.err{background:rgba(214,74,74,.1);color:#b23b3b}
+
+  /* ===== print / PDF ===== */
+  @page{size:A4;margin:11mm}
+  @media print{
+    body{background:#fff}
+    .toolbar,.hint,.modal{display:none!important}
+    .sheet{box-shadow:none;margin:0;width:auto;max-width:none;border-radius:0}
+    .head{border-radius:0}
+    .sect,.auth,.tl,.act,.hero{break-inside:avoid}
+    *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  }
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <span class="tlogo"></span>
+  <b>مُطابق</b><span class="sub">تقرير امتثال المنشأة</span>
+  <span class="spacer"></span>
+  <select id="csel" class="csel" onchange="render(this.value)"></select>
+  <a id="waBtn" class="btn wa" target="_blank" rel="noopener">واتساب ↗</a>
+  <button class="btn send" onclick="openSend()">أرسل للعميل ✉️</button>
+  <button class="btn print" onclick="window.print()">حفظ PDF ⤓</button>
+</div>
+<div class="hint">اختر المنشأة من القائمة، ثم «حفظ PDF» لإصدار نسخة رسمية تُرسَل للعميل. الزر الأخضر يفتح رسالة واتساب جاهزة.</div>
+
+<div class="sheet" id="sheet"><!-- rendered --></div>
+
+<script>
+const fmtDate = new Date().toLocaleDateString('ar-SA-u-ca-gregory',{year:'numeric',month:'long',day:'numeric'});
+
+const COMPANIES = {
+  c1:{
+    name:"شركة المثال للمقاولات", cr:"١٠١٠٢٣٤٥٦٧", activity:"مقاولات عامة", size:"٤٠ موظفاً", city:"المدينة المنورة",
+    period:"الربع الحالي · "+fmtDate, phone:"9665XXXXXXXX",
+    auth:[
+      {k:'nitaqat',t:"السعودة — نطاقات",o:"قوى · وزارة الموارد البشرية",st:'warn',score:62,
+       lines:[["النطاق الحالي","أخضر منخفض"],["نسبة التوطين","12.5%"],["الفجوة للنطاق الأعلى","~1.5% (موظفان سعوديان)"]],
+       nt:"أنت قرب الحدّ الأدنى للأخضر المنخفض — توظيف سعوديَّيْن يرفعك لنطاق أكثر أماناً."},
+      {k:'zakat',t:"الزكاة والدخل",o:"هيئة الزكاة والضريبة والجمارك",st:'warn',score:58,
+       lines:[["الإقرار القادم","متبقٍ 12 يوماً"],["شهادة الزكاة","سارية حتى 1446/12"],["مستحقّات","لا يوجد متأخّر"]],
+       nt:"جهّز الإقرار قبل الموعد لتفادي الغرامة وضمان تجديد الشهادة."},
+      {k:'einv',t:"الفاتورة الإلكترونية",o:"فاتورة · ZATCA",st:'risk',score:30,
+       lines:[["مرحلة الربط","غير مرتبط"],["المرحلة المطلوبة","الربط والتكامل"],["الحالة","يلزم إجراء"]],
+       nt:"منشأتك ضمن نطاق الربط — يجب ربط نظام الفوترة عبر مزوّد معتمد."},
+      {k:'cr',t:"السجل التجاري",o:"وزارة التجارة · نجِز",st:'ok',score:95,
+       lines:[["الحالة","ساري"],["تاريخ الانتهاء","1447/03/14"],["التجديد","لا حاجة حالياً"]],
+       nt:""},
+      {k:'gosi',t:"التأمينات الاجتماعية",o:"GOSI · مُدد (WPS)",st:'ok',score:88,
+       lines:[["التسجيل","مكتمل"],["الاشتراكات","مُسدَّدة"],["حماية الأجور","متوافقة"]],
+       nt:""},
+      {k:'muni',t:"الرخص البلدية",o:"بلدي · أمانة المدينة",st:'pending',score:70,
+       lines:[["رخصة النشاط","قيد الربط"],["الدفاع المدني","غير محدّث"]],
+       nt:"اربط بيانات بلدي لإظهار حالة الرخص تلقائياً."}
+    ],
+    deadlines:[
+      {lab:"إقرار الزكاة والدخل",sub:"هيئة الزكاة والضريبة",when:"12 يوماً",lvl:'warn'},
+      {lab:"بدء ربط الفاتورة الإلكترونية",sub:"المهلة النظامية تقترب",when:"إجراء عاجل",lvl:'risk'},
+      {lab:"مراجعة نسبة التوطين",sub:"قبل تحديث نطاقات الشهري",when:"~20 يوماً",lvl:'ok'}
+    ],
+    actions:[
+      {p:'high',t:"ربط نظام الفاتورة الإلكترونية عبر مزوّد معتمد من ZATCA."},
+      {p:'high',t:"توظيف سعوديَّيْن لرفع نطاقات إلى منطقة أكثر أماناً."},
+      {p:'med', t:"تجهيز وتقديم إقرار الزكاة قبل انتهاء المهلة (12 يوماً)."},
+      {p:'med', t:"تحديث بيانات الرخصة البلدية والدفاع المدني."}
+    ]
+  },
+  c2:{
+    name:"مؤسسة الأفق التجارية", cr:"٤٠٣٠٩٨٧٦٥٤", activity:"تجارة تجزئة", size:"١٨ موظفاً", city:"جدة",
+    period:"الربع الحالي · "+fmtDate, phone:"9665XXXXXXXX",
+    auth:[
+      {k:'nitaqat',t:"السعودة — نطاقات",o:"قوى · وزارة الموارد البشرية",st:'ok',score:90,
+       lines:[["النطاق الحالي","أخضر متوسط"],["نسبة التوطين","26%"],["الهامش فوق الحدّ","مريح"]],nt:""},
+      {k:'zakat',t:"الزكاة والدخل",o:"هيئة الزكاة والضريبة والجمارك",st:'ok',score:92,
+       lines:[["الإقرار القادم","مُقدَّم"],["شهادة الزكاة","سارية"],["مستحقّات","لا يوجد"]],nt:""},
+      {k:'einv',t:"الفاتورة الإلكترونية",o:"فاتورة · ZATCA",st:'ok',score:96,
+       lines:[["مرحلة الربط","مرتبط ومتكامل"],["الحالة","متوافق"]],nt:""},
+      {k:'cr',t:"السجل التجاري",o:"وزارة التجارة · نجِز",st:'ok',score:94,
+       lines:[["الحالة","ساري"],["تاريخ الانتهاء","1448/01/02"]],nt:""},
+      {k:'gosi',t:"التأمينات الاجتماعية",o:"GOSI · مُدد",st:'warn',score:70,
+       lines:[["التسجيل","مكتمل"],["الاشتراكات","دفعة قادمة خلال 5 أيام"]],nt:"سدّد الاشتراك قبل موعده لتفادي الغرامة."},
+      {k:'muni',t:"الرخص البلدية",o:"بلدي",st:'ok',score:88,
+       lines:[["رخصة النشاط","سارية"],["الدفاع المدني","محدّث"]],nt:""}
+    ],
+    deadlines:[
+      {lab:"اشتراك التأمينات الاجتماعية",sub:"دفعة الشهر الحالي",when:"5 أيام",lvl:'warn'},
+      {lab:"تحديث نطاقات الشهري",sub:"الوضع مستقر",when:"~25 يوماً",lvl:'ok'}
+    ],
+    actions:[
+      {p:'med',t:"سداد اشتراك التأمينات قبل تاريخ الاستحقاق."},
+      {p:'med',t:"الحفاظ على نسبة التوطين الحالية عند أي توظيف جديد."}
+    ]
+  },
+  c3:{
+    name:"شركة البناء الحديث", cr:"٢٠٥٠١١٢٢٣٣", activity:"إنشاءات", size:"٦٥ موظفاً", city:"الرياض",
+    period:"الربع الحالي · "+fmtDate, phone:"9665XXXXXXXX",
+    auth:[
+      {k:'nitaqat',t:"السعودة — نطاقات",o:"قوى · وزارة الموارد البشرية",st:'risk',score:25,
+       lines:[["النطاق الحالي","أصفر"],["نسبة التوطين","8%"],["المطلوب للأخضر","~4% (عدة موظفين)"]],
+       nt:"النطاق الأصفر يقيّد الخدمات — رفع التوطين أولوية قصوى."},
+      {k:'zakat',t:"الزكاة والدخل",o:"هيئة الزكاة والضريبة والجمارك",st:'risk',score:35,
+       lines:[["الإقرار","متأخّر"],["شهادة الزكاة","منتهية"],["مستحقّات","غرامة محتملة"]],
+       nt:"بادر بتسوية الإقرار المتأخّر لإيقاف تراكم الغرامات."},
+      {k:'einv',t:"الفاتورة الإلكترونية",o:"فاتورة · ZATCA",st:'warn',score:55,
+       lines:[["مرحلة الربط","ربط جزئي"],["الحالة","يلزم استكمال"]],nt:"أكمل تكامل المرحلة الثانية مع المنصّة."},
+      {k:'cr',t:"السجل التجاري",o:"وزارة التجارة · نجِز",st:'warn',score:60,
+       lines:[["الحالة","ساري"],["تاريخ الانتهاء","قريب (38 يوماً)"]],nt:"جهّز تجديد السجل قبل انتهائه."},
+      {k:'gosi',t:"التأمينات الاجتماعية",o:"GOSI · مُدد",st:'ok',score:82,
+       lines:[["التسجيل","مكتمل"],["الاشتراكات","مُسدَّدة"]],nt:""},
+      {k:'muni',t:"الرخص البلدية",o:"بلدي",st:'pending',score:50,
+       lines:[["رخصة النشاط","قيد الربط"]],nt:""}
+    ],
+    deadlines:[
+      {lab:"تسوية إقرار الزكاة المتأخّر",sub:"غرامات تتراكم",when:"عاجل جداً",lvl:'risk'},
+      {lab:"رفع نسبة التوطين",sub:"الخروج من النطاق الأصفر",when:"عاجل",lvl:'risk'},
+      {lab:"تجديد السجل التجاري",sub:"وزارة التجارة",when:"38 يوماً",lvl:'warn'}
+    ],
+    actions:[
+      {p:'high',t:"تسوية إقرار الزكاة المتأخّر وتجديد شهادة الزكاة فوراً."},
+      {p:'high',t:"خطة توظيف سعوديين عاجلة للخروج من النطاق الأصفر."},
+      {p:'med', t:"استكمال تكامل الفاتورة الإلكترونية."},
+      {p:'med', t:"تجديد السجل التجاري قبل انتهائه (38 يوماً)."}
+    ]
+  }
+};
+
+const WEIGHTS={nitaqat:.25,zakat:.22,einv:.18,cr:.13,gosi:.15,muni:.07};
+const STATUS={
+  ok:{txt:"ملتزم",mark:"var(--band-mid)",bg:"rgba(63,157,90,.12)",fg:"#2E7D45",ic:"●"},
+  warn:{txt:"يحتاج متابعة",mark:"var(--amber)",bg:"rgba(224,161,46,.15)",fg:"#B9831F",ic:"●"},
+  risk:{txt:"خطر",mark:"var(--band-red)",bg:"rgba(214,74,74,.13)",fg:"#C23B3B",ic:"●"},
+  pending:{txt:"قيد الربط",mark:"var(--band-plat)",bg:"rgba(92,107,130,.13)",fg:"#5C6B82",ic:"○"}
+};
+function overallBand(s){
+  if(s>=85) return {lab:"ممتاز",col:"var(--band-mid)"};
+  if(s>=70) return {lab:"جيد",col:"var(--band-high)"};
+  if(s>=50) return {lab:"يحتاج متابعة",col:"var(--amber)"};
+  return {lab:"إجراء عاجل",col:"var(--band-red)"};
+}
+function score(c){
+  let s=0,w=0;
+  c.auth.forEach(a=>{const wt=WEIGHTS[a.k]||.1; s+=a.score*wt; w+=wt;});
+  return Math.round(s/w);
+}
+function ring(pct,col){
+  const r=74,c=2*Math.PI*r,off=c*(1-pct/100);
+  return `<svg width="168" height="168" viewBox="0 0 168 168">
+    <circle cx="84" cy="84" r="${r}" fill="none" stroke="#EAEEF3" stroke-width="13"/>
+    <circle cx="84" cy="84" r="${r}" fill="none" stroke="${col}" stroke-width="13"
+      stroke-linecap="round" stroke-dasharray="${c.toFixed(1)}" stroke-dashoffset="${off.toFixed(1)}"/>
+  </svg>`;
+}
+
+function render(id){
+  const c=COMPANIES[id]; if(!c) return;
+  const ov=score(c), b=overallBand(ov);
+  const okN=c.auth.filter(a=>a.st==='ok').length;
+  const needN=c.auth.filter(a=>a.st==='warn'||a.st==='risk').length;
+  const riskN=c.auth.filter(a=>a.st==='risk').length;
+  const ref="MTBQ-"+id.toUpperCase()+"-"+new Date().toISOString().slice(0,10).replace(/-/g,'');
+
+  CURRENT={
+    estName:c.name, cr:c.cr, score:ov, label:b.lab,
+    okCount:okN, needCount:needN, riskCount:riskN,
+    nearestDeadline: c.deadlines[0] ? (c.deadlines[0].lab+' — '+c.deadlines[0].when) : '—',
+    reportUrl:'https://motabaq.netlify.app'
+  };
+
+  const authCards=c.auth.map(a=>{
+    const s=STATUS[a.st];
+    const lines=a.lines.map(l=>`<div class="ln"><span class="k">${l[0]}</span><span class="val">${l[1]}</span></div>`).join('');
+    return `<div class="auth" style="--mark:${s.mark}">
+      <div class="ah"><div><div class="t">${a.t}</div><div class="o">${a.o}</div></div>
+        <span class="chip" style="background:${s.bg};color:${s.fg}">${s.ic} ${s.txt}</span></div>
+      <div class="lines">${lines}</div>
+      ${a.nt?`<div class="nt">${a.nt}</div>`:''}</div>`;
+  }).join('');
+
+  const tls=c.deadlines.map(d=>{
+    const col=d.lvl==='risk'?'var(--band-red)':d.lvl==='warn'?'var(--amber)':'var(--band-mid)';
+    return `<div class="tl"><span class="dot" style="background:${col}"></span>
+      <span class="lab">${d.lab}<small>${d.sub}</small></span>
+      <span class="when" style="color:${col}">${d.when}</span></div>`;
+  }).join('');
+
+  const acts=c.actions.map(a=>`<div class="act"><span class="pr ${a.p}">${a.p==='high'?'أولوية عالية':'متوسطة'}</span><span class="tx">${a.t}</span></div>`).join('');
+
+  document.getElementById('sheet').innerHTML=`
+    <div class="head">
+      <div class="row">
+        <div class="hlogo"><span class="mk"></span><div><b>مُطابق</b><span>لوحة قيادة الامتثال</span></div></div>
+        <div class="doc-t"><div class="k">تقرير امتثال المنشأة</div><div class="ref">${ref}</div></div>
+      </div>
+      <div class="estab">
+        <span class="f">المنشأة<b>${c.name}</b></span>
+        <span class="f">السجل التجاري<b>${c.cr}</b></span>
+        <span class="f">النشاط<b>${c.activity}</b></span>
+        <span class="f">الحجم<b>${c.size}</b></span>
+        <span class="f">المدينة<b>${c.city}</b></span>
+        <span class="f">الفترة<b>${c.period}</b></span>
+      </div>
+    </div>
+
+    <div class="body">
+      <div class="hero">
+        <div class="ring-wrap">
+          <div class="ring">${ring(ov,b.col)}<div class="ctr"><div class="n">${ov}</div><div class="d">من 100</div></div></div>
+          <span class="score-tag" style="background:${b.col}">${b.lab}</span>
+        </div>
+        <div>
+          <div class="sect-h"><span class="bar"></span><h3>ملخّص حالة الامتثال</h3></div>
+          <div class="sumgrid">
+            <div class="stat ok"><div class="lbl">جهات ملتزمة</div><div class="v">${okN}<small>من ${c.auth.length}</small></div></div>
+            <div class="stat warn"><div class="lbl">تحتاج إجراء</div><div class="v">${needN}</div></div>
+            <div class="stat risk"><div class="lbl">حالات خطر</div><div class="v">${riskN}</div></div>
+            <div class="stat"><div class="lbl">أقرب موعد حرج</div><div class="v" style="font-size:16px">${c.deadlines[0]?c.deadlines[0].when:'—'}</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sect">
+        <div class="sect-h"><span class="bar"></span><h3>حالة الجهات والمراجع</h3></div>
+        <div class="auth-grid">${authCards}</div>
+      </div>
+
+      <div class="sect">
+        <div class="sect-h"><span class="bar"></span><h3>المواعيد الحرجة</h3></div>
+        <div class="timeline">${tls}</div>
+      </div>
+
+      <div class="sect">
+        <div class="sect-h"><span class="bar"></span><h3>خطة التصحيح ذات الأولوية</h3></div>
+        <div class="actions">${acts}</div>
+      </div>
+    </div>
+
+    <div class="foot">
+      <div class="note">تعتمد بيانات هذا التقرير على ما تم إدخاله أو تفويض ربطه من جهات المنشأة (قوى، هيئة الزكاة والضريبة، وزارة التجارة، التأمينات الاجتماعية، بلدي). مُطابق أداة لدعم متابعة الامتثال ولا يُغني عن المصادر والمنصّات الرسمية. هذا التقرير استرشادي وليس وثيقة نظامية.</div>
+      <div class="seal"><span class="mk"></span><div class="tx">صدر بواسطة<b>منصّة مُطابق</b></div></div>
+    </div>`;
+
+  // whatsapp prefilled message
+  const msg=`مرحباً، هذا تقرير امتثال *${c.name}* من منصّة مُطابق:%0A`+
+    `• المؤشر العام: ${ov}/100 (${b.lab})%0A`+
+    `• جهات ملتزمة: ${okN} من ${c.auth.length}%0A`+
+    `• تحتاج إجراء: ${needN}%0A`+
+    (c.deadlines[0]?`• أقرب موعد حرج: ${c.deadlines[0].lab} خلال ${c.deadlines[0].when}%0A`:'')+
+    `سيصلك ملف PDF بالتفاصيل الكاملة.`;
+  document.getElementById('waBtn').href=`https://wa.me/?text=${msg}`;
+}
+
+// ===== send report to client via n8n webhook =====
+const WEBHOOK='https://abukaleed292.app.n8n.cloud/webhook/motabaq-report';
+let CURRENT=null;
+function openSend(){
+  if(!CURRENT) return;
+  const m=document.getElementById('sendMsg'); m.hidden=true; m.textContent='';
+  document.getElementById('clientEmail').value='';
+  document.getElementById('sendModal').hidden=false;
+}
+function closeSend(){ document.getElementById('sendModal').hidden=true; }
+async function doSend(){
+  const email=document.getElementById('clientEmail').value.trim();
+  const msg=document.getElementById('sendMsg'), go=document.getElementById('sendGo');
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){
+    msg.hidden=false; msg.className='sendmsg err'; msg.textContent='أدخل بريداً إلكترونياً صحيحاً.'; return;
+  }
+  go.disabled=true; go.textContent='جارٍ الإرسال…';
+  try{
+    await fetch(WEBHOOK,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...CURRENT,clientEmail:email})});
+    msg.hidden=false; msg.className='sendmsg ok'; msg.textContent='تم إرسال تقرير «'+CURRENT.estName+'» إلى '+email+' ✓';
+  }catch(e){
+    msg.hidden=false; msg.className='sendmsg ok'; msg.textContent='تم إرسال الطلب. إن لم يصل البريد خلال دقائق تحقّق من الاتصال.';
+  }finally{ go.disabled=false; go.textContent='إرسال الآن ←'; }
+}
+
+// build switcher
+const sel=document.getElementById('csel');
+Object.entries(COMPANIES).forEach(([id,c])=>{const o=document.createElement('option');o.value=id;o.textContent=c.name;sel.appendChild(o);});
+render('c1');
+</script>
+<div id="sendModal" class="modal" hidden>
+  <div class="modal-card">
+    <h3>إرسال التقرير للعميل</h3>
+    <p class="mp">يصل العميل بريداً رسمياً يحوي مؤشر الامتثال، ملخّص الجهات، أقرب موعد حرج، ورابط التقرير الكامل.</p>
+    <label>البريد الإلكتروني للعميل</label>
+    <input id="clientEmail" type="email" placeholder="client@email.com" dir="ltr">
+    <div class="modal-actions">
+      <button class="btn ghost" onclick="closeSend()">إلغاء</button>
+      <button id="sendGo" class="btn print" onclick="doSend()">إرسال الآن ←</button>
+    </div>
+    <div id="sendMsg" class="sendmsg" hidden></div>
+  </div>
+</div>
+
+</body>
+</html>

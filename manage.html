@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>مُطابق — إدارة المنشآت</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Readex+Pro:wght@400;500;600;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root{--bg:#EBEEF3;--ink:#19212E;--navy:#1B2A4A;--navy-2:#28406E;--teal:#1F9D8C;--card:#fff;--line:#D8DEE7;--muted:#5E6B7E;--band-red:#D64A4A;--amber:#E0A12E;--band-mid:#3F9D5A;--band-plat:#5C6B82}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:"IBM Plex Sans Arabic",system-ui,sans-serif;font-size:15px;line-height:1.7}
+  h1,h2,h3{font-family:"Readex Pro",sans-serif;margin:0;line-height:1.25}
+  .topbar{background:var(--navy);color:#EDF1F7;padding:12px 0}
+  .wrap{max-width:920px;margin:0 auto;padding:0 18px}
+  .tb{display:flex;align-items:center;gap:12px}
+  .logo{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,var(--teal),#15c3ab);position:relative;flex:none}
+  .logo::after{content:"";position:absolute;inset:9px auto auto 9px;width:9px;height:9px;border-radius:2px;background:var(--navy)}
+  .brand b{font-family:"Readex Pro";font-weight:700;font-size:17px}.brand small{display:block;color:#9DB0CC;font-size:11px;margin-top:-3px}
+  .sp{flex:1}
+  .lnk{color:#EDF1F7;text-decoration:none;background:#24355A;border:1px solid #3A4E78;border-radius:9px;padding:8px 12px;font-size:13px;font-family:"Readex Pro";font-weight:600;cursor:pointer}
+  .lnk:hover{background:#2c3f6b}
+
+  main{max-width:920px;margin:22px auto;padding:0 18px}
+  .head{margin-bottom:18px}
+  .head h1{font-size:22px;color:var(--navy)}.head p{color:var(--muted);font-size:13.5px;margin:4px 0 0}
+
+  .banner{background:rgba(224,161,46,.14);color:#9a6b13;border-radius:11px;padding:11px 14px;font-size:13px;margin-bottom:16px;display:none}
+  .banner.show{display:block}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin-bottom:14px;box-shadow:0 1px 2px rgba(27,42,74,.05)}
+  .estrow{display:flex;align-items:center;gap:12px}
+  .estrow .info{flex:1}
+  .estrow .nm{font-family:"Readex Pro";font-weight:700;color:var(--navy);font-size:16px}
+  .estrow .meta{color:var(--muted);font-size:12.5px;margin-top:2px}
+  .btns{display:flex;gap:8px;flex-wrap:wrap}
+  .btn{border:none;cursor:pointer;font-family:"Readex Pro";font-weight:600;font-size:13px;border-radius:9px;padding:9px 13px}
+  .btn-teal{background:var(--teal);color:#fff}.btn-navy{background:var(--navy);color:#fff}
+  .btn-ghost{background:#EEF1F5;color:var(--navy)}.btn-danger{background:rgba(214,74,74,.12);color:var(--band-red)}
+  .btn:disabled{opacity:.55;cursor:default}
+
+  .addcard{border:1.5px dashed var(--line);background:#FbFcFd}
+  label{display:block;font-size:12.5px;font-weight:600;margin:0 0 6px;color:var(--ink)}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  input,select{width:100%;font-family:inherit;font-size:15px;border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:#fff}
+  input:focus,select:focus{outline:2px solid var(--teal);outline-offset:1px;border-color:transparent}
+  .field{margin-bottom:12px}
+  .empty{color:var(--muted);text-align:center;padding:26px;font-size:14px}
+
+  /* modal */
+  .modal{position:fixed;inset:0;background:rgba(19,33,46,.5);display:none;align-items:center;justify-content:center;z-index:40;padding:16px}
+  .modal.show{display:flex}
+  .mcard{background:#fff;border-radius:16px;max-width:560px;width:100%;max-height:88vh;overflow:auto;padding:22px}
+  .mcard h2{color:var(--navy);font-size:18px;margin-bottom:4px}
+  .mcard .sub{color:var(--muted);font-size:12.5px;margin-bottom:16px}
+  .auth{border:1px solid var(--line);border-radius:12px;padding:13px 14px;margin-bottom:11px}
+  .auth .at{font-family:"Readex Pro";font-weight:700;color:var(--navy);font-size:14px;margin-bottom:9px}
+  .auth .ff{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .auth .ff .full{grid-column:1/-1}
+  .switch{display:flex;align-items:center;gap:8px;font-size:13px}
+  .modal-actions{display:flex;justify-content:flex-start;gap:10px;margin-top:8px}
+  .msg{font-size:13px;padding:9px 12px;border-radius:9px;margin-top:10px;display:none}
+  .msg.show{display:block}.msg.ok{background:rgba(31,157,140,.12);color:#1c7d6f}.msg.err{background:rgba(214,74,74,.1);color:#b23b3b}
+  @media(max-width:560px){.grid,.auth .ff{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+  <div class="topbar"><div class="wrap tb">
+    <span class="logo"></span>
+    <span class="brand"><b>مُطابق</b><small>إدارة المنشآت</small></span>
+    <span class="sp"></span>
+    <a class="lnk" href="/">لوحة القيادة</a>
+    <button class="lnk" id="logoutBtn" onclick="logout()" style="display:none">خروج</button>
+  </div></div>
+
+  <main>
+    <div class="head"><h1>منشآتي</h1><p>أضِف منشآتك وحدّث حالة كل جهة، لتظهر مباشرةً في لوحة القيادة والتقارير.</p></div>
+    <div class="banner" id="banner">وضع المعاينة: أضف مفاتيح Supabase في أعلى الملف لحفظ البيانات فعلياً (التعديلات الآن مؤقتة).</div>
+
+    <div id="list"></div>
+
+    <div class="card addcard">
+      <h3 style="color:var(--navy);font-size:15px;margin-bottom:12px">➕ إضافة منشأة</h3>
+      <div class="grid">
+        <div class="field"><label>اسم المنشأة</label><input id="f_name" placeholder="مثال: شركة المثال للمقاولات"></div>
+        <div class="field"><label>السجل التجاري</label><input id="f_cr" dir="ltr" placeholder="١٠١٠…"></div>
+        <div class="field"><label>النشاط</label><input id="f_activity" placeholder="مقاولات عامة"></div>
+        <div class="field"><label>الحجم</label><input id="f_size" placeholder="٤٠ موظفاً"></div>
+        <div class="field"><label>المدينة</label><input id="f_city" placeholder="المدينة المنورة"></div>
+      </div>
+      <button class="btn btn-teal" id="addBtn" onclick="addEst()">حفظ المنشأة</button>
+      <div class="msg" id="addMsg"></div>
+    </div>
+  </main>
+
+  <!-- compliance editor modal -->
+  <div class="modal" id="modal">
+    <div class="mcard">
+      <h2 id="mTitle">بيانات الجهات</h2>
+      <div class="sub" id="mSub"></div>
+      <div id="authWrap"></div>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" onclick="closeModal()">إغلاق</button>
+        <button class="btn btn-navy" id="saveCompBtn" onclick="saveComp()">حفظ الحالة</button>
+      </div>
+      <div class="msg" id="mMsg"></div>
+    </div>
+  </div>
+
+<script>
+// ====== Supabase (اختياري): ضع مفاتيح مشروعك لتفعيل الحفظ الفعلي ======
+const SUPABASE_URL = "https://YOUR-PROJECT.supabase.co";
+const SUPABASE_ANON_KEY = "YOUR-ANON-KEY";
+const AUTH_PAGE = "/auth.html";
+const CONFIGURED = !SUPABASE_URL.includes("YOUR-PROJECT") && !SUPABASE_ANON_KEY.includes("YOUR-ANON");
+let sb=null; try{ if(window.supabase && CONFIGURED) sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);}catch(e){}
+
+const AUTHS=[
+  {k:'nitaqat',  t:'السعودة — نطاقات',        fields:[{n:'saudi',l:'عدد السعوديين',type:'number'},{n:'expat',l:'عدد الوافدين',type:'number'}]},
+  {k:'einvoice', t:'الفاتورة الإلكترونية (ZATCA)', fields:[{n:'days',l:'المتبقّي (يوم)',type:'number'},{n:'wave',l:'الموجة',type:'text',full:true},{n:'integrated',l:'مربوط بالمنصّة؟',type:'bool',full:true}]},
+  {k:'zakat',    t:'الزكاة والدخل',            fields:[{n:'dueInDays',l:'استحقاق الإقرار خلال (يوم)',type:'number'}]},
+  {k:'cr',       t:'السجل التجاري',            fields:[{n:'expiryDays',l:'انتهاء السجل خلال (يوم)',type:'number'}]},
+  {k:'gosi',     t:'التأمينات (GOSI)',          fields:[{n:'mismatch',l:'تعارضات اشتراك (عدد موظفين)',type:'number'}]},
+  {k:'municipal',t:'الرخصة البلدية (بلدي)',     fields:[{n:'expiry',l:'انتهاء الرخصة خلال (يوم)',type:'number'},{n:'violations',l:'مخالفات قائمة (عدد)',type:'number'}]}
+];
+const STATUSES=[['ok','ملتزم'],['warn','يحتاج متابعة'],['risk','خطر'],['pending','قيد الربط']];
+const STATUS_SCORE={ok:90,warn:55,risk:25,pending:60};
+
+let accountId=null, ests=[], editingId=null;
+const $=id=>document.getElementById(id);
+
+// ---------- store (Supabase أو معاينة محلّية) ----------
+const mem={ ests:[{id:'demo1',name:'شركة المثال للمقاولات',cr_number:'1010234567',activity:'مقاولات عامة',size:'40 موظفاً',city:'المدينة المنورة'}], comp:{} };
+
+const store={
+  async list(){ if(sb){ const{data}=await sb.from('establishments').select('*').order('created_at'); return data||[]; } return mem.ests.slice(); },
+  async add(o){ if(sb){ const{data,error}=await sb.from('establishments').insert({account_id:accountId,...o}).select().single(); if(error)throw error; return data; } const e={id:'m'+Date.now(),...o}; mem.ests.push(e); return e; },
+  async del(id){ if(sb){ const{error}=await sb.from('establishments').delete().eq('id',id); if(error)throw error; return; } mem.ests=mem.ests.filter(e=>e.id!==id); delete mem.comp[id]; },
+  async getComp(id){ if(sb){ const{data}=await sb.from('compliance_items').select('authority,status,data').eq('establishment_id',id); const m={}; (data||[]).forEach(r=>m[r.authority]={status:r.status,data:r.data||{}}); return m; } return mem.comp[id]||{}; },
+  async saveComp(id,rows){ // rows: [{authority,status,data,score}]
+    if(sb){ const payload=rows.map(r=>({establishment_id:id,authority:r.authority,status:r.status,score:r.score,data:r.data})); const{error}=await sb.from('compliance_items').upsert(payload,{onConflict:'establishment_id,authority'}); if(error)throw error; return; }
+    mem.comp[id]={}; rows.forEach(r=>mem.comp[id][r.authority]={status:r.status,data:r.data}); }
+};
+
+// ---------- render list ----------
+async function refresh(){
+  ests=await store.list();
+  const L=$('list');
+  if(!ests.length){ L.innerHTML='<div class="card empty">لا منشآت بعد — أضِف أوّل منشأة من الأسفل.</div>'; return; }
+  L.innerHTML=ests.map(e=>(
+    '<div class="card"><div class="estrow"><div class="info">'+
+      '<div class="nm">'+esc(e.name)+'</div>'+
+      '<div class="meta">'+(e.cr_number?('س.ت '+esc(e.cr_number)+' · '):'')+(e.city?esc(e.city)+' · ':'')+(e.activity?esc(e.activity):'')+'</div>'+
+    '</div><div class="btns">'+
+      '<button class="btn btn-teal" onclick="openComp(\''+e.id+'\')">بيانات الجهات</button>'+
+      '<button class="btn btn-danger" onclick="delEst(\''+e.id+'\')">حذف</button>'+
+    '</div></div></div>'
+  )).join('');
+}
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+
+// ---------- add ----------
+async function addEst(){
+  const name=$('f_name').value.trim();
+  const m=$('addMsg');
+  if(!name){ m.className='msg show err'; m.textContent='أدخل اسم المنشأة.'; return; }
+  $('addBtn').disabled=true;
+  try{
+    await store.add({name,cr_number:$('f_cr').value.trim(),activity:$('f_activity').value.trim(),size:$('f_size').value.trim(),city:$('f_city').value.trim()});
+    ['f_name','f_cr','f_activity','f_size','f_city'].forEach(id=>$(id).value='');
+    m.className='msg show ok'; m.textContent='أُضيفت المنشأة ✓';
+    await refresh();
+  }catch(e){ m.className='msg show err'; m.textContent=e.message||'تعذّر الحفظ.'; }
+  finally{ $('addBtn').disabled=false; }
+}
+async function delEst(id){
+  if(!confirm('حذف هذه المنشأة وكل بياناتها؟')) return;
+  try{ await store.del(id); await refresh(); }catch(e){ alert(e.message||'تعذّر الحذف.'); }
+}
+
+// ---------- compliance editor ----------
+async function openComp(id){
+  editingId=id;
+  const e=ests.find(x=>x.id===id)||{};
+  $('mTitle').textContent='بيانات الجهات';
+  $('mSub').textContent=e.name||'';
+  const existing=await store.getComp(id);
+  $('authWrap').innerHTML=AUTHS.map(a=>{
+    const cur=existing[a.k]||{status:'pending',data:{}};
+    const opts=STATUSES.map(s=>'<option value="'+s[0]+'"'+(s[0]===cur.status?' selected':'')+'>'+s[1]+'</option>').join('');
+    let fieldsHtml='';
+    a.fields.forEach(f=>{
+      const v=cur.data[f.n];
+      if(f.type==='bool'){
+        fieldsHtml+='<div class="'+(f.full?'full ':'')+'switch"><input type="checkbox" id="c_'+a.k+'_'+f.n+'" '+(v?'checked':'')+'><label for="c_'+a.k+'_'+f.n+'" style="margin:0">'+f.l+'</label></div>';
+      }else{
+        fieldsHtml+='<div class="'+(f.full?'full':'')+'"><label>'+f.l+'</label><input id="c_'+a.k+'_'+f.n+'" type="'+(f.type==='number'?'number':'text')+'" value="'+(v==null?'':esc(v))+'"></div>';
+      }
+    });
+    return '<div class="auth"><div class="at">'+a.t+'</div><div class="ff">'+
+      '<div class="full"><label>الحالة</label><select id="st_'+a.k+'">'+opts+'</select></div>'+
+      fieldsHtml+'</div></div>';
+  }).join('');
+  $('mMsg').className='msg';
+  $('modal').classList.add('show');
+}
+function closeModal(){ $('modal').classList.remove('show'); editingId=null; }
+
+async function saveComp(){
+  if(!editingId) return;
+  const rows=AUTHS.map(a=>{
+    const status=$('st_'+a.k).value;
+    const data={};
+    a.fields.forEach(f=>{
+      const el=$('c_'+a.k+'_'+f.n); if(!el) return;
+      if(f.type==='bool') data[f.n]=el.checked;
+      else if(f.type==='number') data[f.n]=parseInt(el.value)||0;
+      else data[f.n]=el.value.trim();
+    });
+    return {authority:a.k,status,score:STATUS_SCORE[status]||0,data};
+  });
+  const m=$('mMsg'); $('saveCompBtn').disabled=true;
+  try{ await store.saveComp(editingId,rows); m.className='msg show ok'; m.textContent='حُفظت الحالة ✓ — ستظهر في اللوحة.'; setTimeout(closeModal,900); }
+  catch(e){ m.className='msg show err'; m.textContent=e.message||'تعذّر الحفظ.'; }
+  finally{ $('saveCompBtn').disabled=false; }
+}
+
+async function logout(){ try{ if(sb) await sb.auth.signOut(); }catch(e){} window.location.href=AUTH_PAGE; }
+
+// ---------- boot ----------
+(async function boot(){
+  if(CONFIGURED && sb){
+    try{
+      const{data}=await sb.auth.getSession();
+      if(!data||!data.session){ window.location.href=AUTH_PAGE; return; }
+      $('logoutBtn').style.display='';
+      const{data:mem2}=await sb.from('memberships').select('account_id').limit(1);
+      accountId=mem2&&mem2[0]?mem2[0].account_id:null;
+    }catch(e){}
+  }else{
+    $('banner').classList.add('show');
+  }
+  await refresh();
+})();
+</script>
+</body>
+</html>

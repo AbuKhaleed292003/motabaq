@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>مُطابق — اعرف لونك في نطاقات قبل أن ينزلق</title>
+<meta name="description" content="لوحة قيادة امتثال واحدة للمنشآت السعودية: ينبّهك قبل أن تنزلق في نطاقات أو يفوتك موعد فاتورة (ZATCA) — بدل التنقّل بين خمس بوابات." />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Readex+Pro:wght@400;500;600;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#1B2A4A;--navy-2:#22335A;--navy-deep:#141F38;--teal:#1F9D8C;--teal-bright:#27C3AB;
+    --ink:#19212E;--muted:#5E6B7E;--line:#E0E5EC;--canvas:#F4F6F9;--card:#FFFFFF;
+    --red:#D64A4A;--g-low:#86B96B;--g-mid:#3F9D5A;--g-high:#1F7A45;--plat:#5C6B82;
+    --shadow:0 1px 2px rgba(20,31,56,.06),0 14px 40px rgba(20,31,56,.10);
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--canvas);color:var(--ink);font-family:"IBM Plex Sans Arabic",system-ui,sans-serif;font-size:17px;line-height:1.75;-webkit-font-smoothing:antialiased}
+  h1,h2,h3,.display{font-family:"Readex Pro",sans-serif;line-height:1.18;letter-spacing:-.01em}
+  .wrap{max-width:1060px;margin:0 auto;padding:0 22px}
+  a{color:inherit}
+  .eyebrow{font-family:"Readex Pro";font-weight:600;font-size:13px;letter-spacing:.04em;color:var(--teal);text-transform:uppercase}
+
+  /* nav */
+  .nav{position:sticky;top:0;z-index:30;background:rgba(20,31,56,.92);backdrop-filter:blur(8px);border-bottom:1px solid rgba(255,255,255,.08)}
+  .nav .wrap{display:flex;align-items:center;gap:12px;height:64px}
+  .logo{width:32px;height:32px;border-radius:9px;background:linear-gradient(135deg,var(--teal),var(--teal-bright));position:relative;flex:none}
+  .logo::after{content:"";position:absolute;inset:9px auto auto 9px;width:10px;height:10px;border-radius:2px;background:var(--navy-deep)}
+  .nav b{font-family:"Readex Pro";font-weight:700;font-size:20px;color:#EEF2F8}
+  .nav .links{margin-inline-start:auto;display:flex;gap:22px;align-items:center}
+  .nav .links a{color:#AEBBD2;font-size:14.5px;font-weight:500;text-decoration:none}
+  .nav .links a:hover{color:#fff}
+  .nav .cta{background:var(--teal);color:#06231E;padding:9px 16px;border-radius:10px;font-weight:600;font-size:14px;text-decoration:none}
+  .nav .cta:hover{background:var(--teal-bright);color:#06231E}
+  @media(max-width:720px){.nav .links a:not(.cta){display:none}}
+
+  /* hero */
+  .hero{background:radial-gradient(120% 130% at 85% 0%,#26396b 0%,var(--navy) 42%,var(--navy-deep) 100%);color:#EEF2F8;padding:64px 0 0;overflow:hidden}
+  .hero .grid{display:grid;grid-template-columns:1.05fr .95fr;gap:40px;align-items:center}
+  @media(max-width:880px){.hero .grid{grid-template-columns:1fr;gap:30px}}
+  .hero h1{font-size:clamp(30px,5.4vw,52px);font-weight:700;margin:14px 0 16px;color:#fff}
+  .hero h1 .accent{color:var(--teal-bright)}
+  .hero p.lead{font-size:clamp(16px,2.4vw,19px);color:#C2CEE3;max-width:46ch;margin:0 0 26px}
+  .hero .ctas{display:flex;gap:12px;flex-wrap:wrap}
+  .btn{display:inline-flex;align-items:center;gap:9px;font-family:"Readex Pro";font-weight:600;font-size:16px;padding:14px 22px;border-radius:12px;text-decoration:none;cursor:pointer;border:none;transition:transform .12s ease}
+  .btn:hover{transform:translateY(-2px)}
+  .btn-primary{background:var(--teal);color:#06231E}
+  .btn-primary:hover{background:var(--teal-bright)}
+  .btn-ghost{background:rgba(255,255,255,.07);color:#EEF2F8;border:1px solid rgba(255,255,255,.18)}
+  .btn-ghost:hover{background:rgba(255,255,255,.13)}
+  .trust{margin-top:20px;font-size:13px;color:#8DA0C0}
+
+  /* signature: band device */
+  .device{background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.02));border:1px solid rgba(255,255,255,.12);border-radius:20px;padding:22px;box-shadow:0 30px 60px rgba(0,0,0,.35)}
+  .device .dtop{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+  .device .dtop .lbl{font-size:12.5px;color:#9DB0CC}
+  .device .dtop .val{font-family:"Readex Pro";font-weight:700;font-size:15px;color:#fff}
+  .band{position:relative;height:34px;border-radius:10px;display:flex;overflow:hidden;direction:ltr}
+  .band .seg{flex:1;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:rgba(255,255,255,.92)}
+  .marker{position:absolute;top:-9px;transform:translateX(-50%);transition:right 1.1s cubic-bezier(.65,.02,.25,1);z-index:3}
+  .marker .pin{width:0;height:0;border-left:8px solid transparent;border-right:8px solid transparent;border-top:11px solid #fff;margin:0 auto;filter:drop-shadow(0 2px 3px rgba(0,0,0,.4))}
+  .marker .tip{position:absolute;bottom:16px;right:50%;transform:translateX(50%);white-space:nowrap;background:#fff;color:var(--navy);font-family:"Readex Pro";font-weight:700;font-size:11px;padding:3px 9px;border-radius:999px;box-shadow:0 4px 10px rgba(0,0,0,.25)}
+  .scale{display:flex;justify-content:space-between;direction:ltr;font-size:10.5px;color:#8DA0C0;margin-top:8px}
+  .alertchip{margin-top:16px;display:flex;align-items:center;gap:10px;background:rgba(31,157,140,.14);border:1px solid rgba(39,195,171,.4);border-radius:12px;padding:11px 14px;font-size:13.5px;color:#CFF3EC;opacity:0;transform:translateY(6px);transition:opacity .5s ease,transform .5s ease}
+  .alertchip.show{opacity:1;transform:none}
+  .alertchip b{color:#fff;font-family:"Readex Pro"}
+  .wave{display:block;width:100%;height:60px;margin-top:-1px}
+
+  /* sections */
+  .section{padding:72px 0}
+  .section h2{font-size:clamp(24px,4vw,34px);font-weight:700;margin:8px 0 10px}
+  .section .sub{color:var(--muted);max-width:60ch;margin:0 0 38px;font-size:16.5px}
+  .center{text-align:center}.center .sub{margin-inline:auto}
+
+  .pains{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+  @media(max-width:820px){.pains{grid-template-columns:1fr}}
+  .pain{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:24px;box-shadow:var(--shadow)}
+  .pain .ic{width:42px;height:42px;border-radius:11px;display:grid;place-items:center;font-size:20px;margin-bottom:14px;background:rgba(214,74,74,.1)}
+  .pain h3{font-size:18px;margin:0 0 7px}
+  .pain p{margin:0;color:var(--muted);font-size:15px}
+
+  .solband{background:var(--navy);color:#EEF2F8}
+  .sols{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+  @media(max-width:820px){.sols{grid-template-columns:1fr}}
+  .sol{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:24px}
+  .sol .ic{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;font-size:20px;margin-bottom:14px;background:rgba(31,157,140,.18);color:var(--teal-bright)}
+  .sol h3{font-size:18px;margin:0 0 7px;color:#fff}
+  .sol p{margin:0;color:#B7C3D8;font-size:15px}
+  .unified{margin-top:26px;display:flex;align-items:center;gap:18px;background:linear-gradient(135deg,rgba(31,157,140,.16),rgba(31,157,140,.04));border:1px solid rgba(39,195,171,.3);border-radius:16px;padding:20px 24px;flex-wrap:wrap}
+  .unified .score{font-family:"Readex Pro";font-weight:700;font-size:40px;color:var(--teal-bright);line-height:1}
+  .unified .txt{flex:1;min-width:220px}.unified .txt b{color:#fff}.unified .txt span{color:#B7C3D8;font-size:14.5px}
+
+  .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;counter-reset:s}
+  @media(max-width:820px){.steps{grid-template-columns:1fr}}
+  .step{position:relative;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:26px 22px 22px;box-shadow:var(--shadow)}
+  .step::before{counter-increment:s;content:counter(s,arabic-indic);font-family:"Readex Pro";font-weight:700;font-size:15px;color:var(--teal);background:rgba(31,157,140,.12);width:34px;height:34px;border-radius:9px;display:grid;place-items:center;margin-bottom:14px}
+  .step h3{font-size:17px;margin:0 0 6px}.step p{margin:0;color:var(--muted);font-size:15px}
+
+  .prices{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+  @media(max-width:900px){.prices{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:520px){.prices{grid-template-columns:1fr}}
+  .price{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px;box-shadow:var(--shadow);display:flex;flex-direction:column}
+  .price.feat{border-color:var(--teal);box-shadow:0 0 0 2px rgba(31,157,140,.25),var(--shadow)}
+  .price .pn{font-family:"Readex Pro";font-weight:700;font-size:16px;margin-bottom:4px}
+  .price .pp{font-family:"Readex Pro";font-weight:700;font-size:26px;color:var(--navy);margin:6px 0}
+  .price .pp small{font-size:13px;color:var(--muted);font-weight:500}
+  .price .pd{font-size:13.5px;color:var(--muted);margin-top:auto;padding-top:10px}
+  .price .tag{align-self:flex-start;background:rgba(31,157,140,.12);color:#0d6b5f;font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px;margin-bottom:8px}
+  .pricenote{text-align:center;color:var(--muted);font-size:13px;margin-top:18px}
+
+  .cta-final{background:radial-gradient(120% 140% at 15% 0%,#26396b,var(--navy) 55%,var(--navy-deep));color:#EEF2F8;border-radius:24px;padding:54px 40px;text-align:center;margin:0 auto;box-shadow:var(--shadow)}
+  .cta-final h2{font-size:clamp(24px,4vw,34px);color:#fff;margin:0 0 12px}
+  .cta-final p{color:#C2CEE3;max-width:52ch;margin:0 auto 26px;font-size:16.5px}
+
+  footer{padding:40px 0;color:var(--muted);font-size:13.5px}
+  footer .wrap{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  footer .logo{width:26px;height:26px}
+  footer b{font-family:"Readex Pro";color:var(--ink)}
+  footer .sep{margin-inline-start:auto}
+  .reveal{opacity:0;transform:translateY(14px);transition:opacity .6s ease,transform .6s ease}
+  .reveal.in{opacity:1;transform:none}
+  :focus-visible{outline:2px solid var(--teal-bright);outline-offset:3px;border-radius:6px}
+  @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.reveal{opacity:1;transform:none}}
+</style>
+</head>
+<body>
+  <nav class="nav"><div class="wrap">
+    <span class="logo"></span><b>مُطابق</b>
+    <span class="links">
+      <a href="#problem">المشكلة</a>
+      <a href="#solution">الحل</a>
+      <a href="#pricing">الأسعار</a>
+      <a class="cta" href="#pilot">اطلب بايلوت</a>
+    </span>
+  </div></nav>
+
+  <header class="hero">
+    <div class="wrap">
+      <div class="grid">
+        <div>
+          <span class="eyebrow">لوحة قيادة الامتثال للمنشآت السعودية</span>
+          <h1>اعرف لونك في نطاقات <span class="accent">قبل</span> أن ينزلق.</h1>
+          <p class="lead">مُطابق يرصد سعودتك وموعد فاتورتك على مدار الساعة، وينبّهك مبكراً — بدل أن تكتشف الخطر بعد أن تتعطّل تأشيراتك وخدماتك.</p>
+          <div class="ctas">
+            <a class="btn btn-primary" href="https://motabaq.netlify.app" target="_blank" rel="noopener">جرّب اللوحة الحيّة ←</a>
+            <a class="btn btn-ghost" href="#pilot">اطلب بايلوت مجاني</a>
+          </div>
+          <div class="trust">عرض حيّ بلا تسجيل · يعمل لمنشأة واحدة أو عدّة منشآت</div>
+        </div>
+        <div>
+          <div class="device">
+            <div class="dtop"><span class="lbl">حالة منشأتك في نطاقات</span><span class="val" id="dval">يرصد…</span></div>
+            <div class="band" id="band">
+              <div class="seg" style="background:var(--red)">أحمر</div>
+              <div class="seg" style="background:var(--g-low)">منخفض</div>
+              <div class="seg" style="background:var(--g-mid)">متوسط</div>
+              <div class="seg" style="background:var(--g-high)">مرتفع</div>
+              <div class="seg" style="background:var(--plat)">بلاتيني</div>
+              <div class="marker" id="marker" style="right:18%"><div class="tip" id="tip">12.5%</div><div class="pin"></div></div>
+            </div>
+            <div class="scale"><span>0%</span><span>10%</span><span>16%</span><span>22%</span><span>30%+</span></div>
+            <div class="alertchip" id="chip">🔔 <span><b>تنبيه مبكر:</b> اقتربت من الحدّ الآمن — وظّف سعودياً واحداً لتعود للأخضر.</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <svg class="wave" viewBox="0 0 1440 60" preserveAspectRatio="none" aria-hidden="true"><path fill="#F4F6F9" d="M0,40 C360,75 1080,5 1440,40 L1440,60 L0,60 Z"></path></svg>
+  </header>
+
+  <main>
+    <section class="section" id="problem">
+      <div class="wrap">
+        <span class="eyebrow">لماذا مُطابق</span>
+        <h2>الامتثال لا ينهار فجأة — بل ينزلق بصمت.</h2>
+        <p class="sub">ثلاثة أخطار تُكلّف المنشآت الصغيرة غالياً، وكلها يمكن رؤيتها مبكراً.</p>
+        <div class="pains">
+          <div class="pain reveal"><div class="ic">📉</div><h3>انزلاق نطاقات</h3><p>نزولك للون الأحمر يوقف التأشيرات ونقل الكفالة وتجديد الإقامات — وغالباً تكتشفه متأخراً.</p></div>
+          <div class="pain reveal"><div class="ic">🧾</div><h3>مواعيد فاتورة (ZATCA)</h3><p>موجات الربط الإلكتروني لها مواعيد نهائية صارمة، وتفويتها يعني غرامات يمكن تفاديها.</p></div>
+          <div class="pain reveal"><div class="ic">🔀</div><h3>تشتّت البوابات</h3><p>قوى، فاتورة، التأمينات… بيانات متفرّقة بلا صورة واحدة تخبرك: هل أنت بخير اليوم؟</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section solband" id="solution">
+      <div class="wrap">
+        <span class="eyebrow">الحل</span>
+        <h2 style="color:#fff">لوحة واحدة ترى امتثالك كاملاً.</h2>
+        <p class="sub" style="color:#B7C3D8">ثلاث وحدات تعمل معاً، ومؤشر صحة واحد يلخّص وضعك في رقم.</p>
+        <div class="sols">
+          <div class="sol reveal"><div class="ic">📊</div><h3>مراقب نطاقات استباقي</h3><p>يحسب نسبتك ولونك لحظياً، ويخبرك كم سعودياً يلزم للوصول للفئة الأعلى — وكم وافداً قبل الانزلاق.</p></div>
+          <div class="sol reveal"><div class="ic">⏳</div><h3>متتبّع فاتورة (ZATCA)</h3><p>حالة الربط، موجتك، وعدّاد الموعد النهائي، مع قائمة جاهزية واضحة خطوة بخطوة.</p></div>
+          <div class="sol reveal"><div class="ic">◈</div><h3>مساعد ذكي</h3><p>يعرف أرقام منشأتك، فيجيب: «كيف أرفع نطاقي خلال ٣ أشهر؟» بإجابة عملية مبنية على وضعك.</p></div>
+        </div>
+        <div class="unified reveal">
+          <div class="score">٠–١٠٠</div>
+          <div class="txt"><b>مؤشر امتثال موحّد.</b> <span>يجمع نطاقات وفاتورة والتأمينات في رقم تنفيذي واحد، وتنبيهات تصلك على البريد أو واتساب.</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="how">
+      <div class="wrap center">
+        <span class="eyebrow">كيف يعمل</span>
+        <h2>ثلاث خطوات حتى أول تنبيه.</h2>
+        <p class="sub">من الإعداد إلى الاطمئنان في دقائق.</p>
+        <div class="steps" style="text-align:right">
+          <div class="step reveal"><h3>أدخل بيانات منشأتك</h3><p>عدد السعوديين والوافدين، ونشاطك — أو اربطها لاحقاً بمصادرها الرسمية.</p></div>
+          <div class="step reveal"><h3>يرصد مُطابق وضعك</h3><p>يحسب لونك ومؤشرك الموحّد، ويقيس بُعدك عن كل خطر.</p></div>
+          <div class="step reveal"><h3>يصلك التنبيه مبكراً</h3><p>عند أول إشارة خطر، يصلك تنبيه عملي بالبريد أو واتساب — قبل أن يقع الضرر.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="pricing" style="background:#EFF2F6">
+      <div class="wrap center">
+        <span class="eyebrow">الأسعار</span>
+        <h2>ابدأ مجاناً، وادفع حين ترى القيمة.</h2>
+        <p class="sub">باقات مبدئية — نضبطها مع أوائل العملاء.</p>
+        <div class="prices" style="text-align:right">
+          <div class="price reveal"><div class="pn">مجاني</div><div class="pp">٠ <small>﷼</small></div><div class="pd">منشأة واحدة · مراقب نطاقات · تنبيه واحد.</div></div>
+          <div class="price reveal feat"><span class="tag">الأكثر ملاءمة</span><div class="pn">أساسي</div><div class="pp">١٤٩ <small>﷼/شهر</small></div><div class="pd">كل الوحدات · تنبيهات بريد · منشأة واحدة.</div></div>
+          <div class="price reveal"><div class="pn">احترافي</div><div class="pp">٣٩٩ <small>﷼/شهر</small></div><div class="pd">عدّة منشآت · واتساب · تقارير PDF.</div></div>
+          <div class="price reveal"><div class="pn">المكاتب</div><div class="pp">حسب الحجم</div><div class="pd">لوحة متعددة المنشآت لمكاتب المحاسبة والموارد البشرية.</div></div>
+        </div>
+        <div class="pricenote">الأسعار مبدئية لمرحلة البايلوت وقابلة للتعديل.</div>
+      </div>
+    </section>
+
+    <section class="section" id="pilot">
+      <div class="wrap">
+        <div class="cta-final reveal">
+          <h2>كن من أوائل المنشآت التي لا تُفاجأ.</h2>
+          <p>نفتح بايلوت مجاني لعدد محدود من المنشآت ومكاتب المحاسبة. جرّبه ٦٠ يوماً، وساعدنا نبنيه كما تحتاجه فعلاً.</p>
+          <a class="btn btn-primary" href="mailto:abukhaleed292@gmail.com?subject=طلب%20بايلوت%20مُطابق&body=اسم%20المنشأة:%0Aالنشاط:%0Aعدد%20الموظفين:%0Aرقم%20التواصل:" >اطلب بايلوت مجاني ←</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer><div class="wrap">
+    <span class="logo"></span><b>مُطابق</b>
+    <span>— لوحة قيادة الامتثال الموحّدة للمنشآت السعودية.</span>
+    <span class="sep">© ٢٠٢٦ · جميع الحقوق محفوظة</span>
+  </div></footer>
+
+<script>
+  // signature: marker animates from danger up to safe, then alert chip appears
+  (function(){
+    var marker=document.getElementById('marker'),tip=document.getElementById('tip'),
+        chip=document.getElementById('chip'),dval=document.getElementById('dval');
+    var reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    function settleSafe(){marker.style.right='34%';tip.textContent='16.2%';dval.textContent='أخضر متوسط — آمن';chip.classList.add('show');}
+    if(reduce){settleSafe();return;}
+    marker.style.right='6%';tip.textContent='8.1%';dval.textContent='قرب الأحمر';
+    setTimeout(function(){tip.textContent='12.5%';dval.textContent='يرصد…';marker.style.right='18%';},700);
+    setTimeout(settleSafe,1700);
+  })();
+  // scroll reveal
+  var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});},{threshold:.16});
+  document.querySelectorAll('.reveal').forEach(function(el){io.observe(el);});
+</script>
+</body>
+</html>

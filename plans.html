@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>مُطابق — الباقات والاشتراك</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Readex+Pro:wght@400;500;600;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<!-- Moyasar (يُفعَّل عند إضافة المفتاح العام) -->
+<link rel="stylesheet" href="https://cdn.moyasar.com/mpf/1.15.0/moyasar.css" />
+<script src="https://cdn.moyasar.com/mpf/1.15.0/moyasar.js"></script>
+<style>
+  :root{--bg:#EEF1F6;--navy:#1B2A4A;--navy2:#28406E;--teal:#1F9D8C;--ink:#1A2230;--muted:#5E6B7E;--line:#E2E7EF;--gold:#C9A227;--green:#1E7A45}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:"IBM Plex Sans Arabic",system-ui,sans-serif;line-height:1.7}
+  h1,h2,h3{font-family:"Readex Pro",sans-serif;margin:0;line-height:1.25}
+  .topbar{background:var(--navy);color:#EDF1F7;padding:12px 0}
+  .wrap{max-width:1000px;margin:0 auto;padding:0 18px}
+  .tb{display:flex;align-items:center;gap:12px}
+  .logo{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,var(--teal),#15c3ab);position:relative;flex:none}
+  .logo::after{content:"";position:absolute;inset:9px auto auto 9px;width:9px;height:9px;border-radius:2px;background:var(--navy)}
+  .brand b{font-family:"Readex Pro";font-weight:700;font-size:17px}.brand small{display:block;color:#9DB0CC;font-size:11px;margin-top:-3px}
+  .sp{flex:1}
+  .lnk{color:#EDF1F7;text-decoration:none;background:#24355A;border:1px solid #3A4E78;border-radius:9px;padding:8px 12px;font-size:13px;font-family:"Readex Pro";font-weight:600;cursor:pointer}
+
+  .hero{text-align:center;padding:34px 18px 10px}
+  .hero h1{font-size:27px;color:var(--navy)}
+  .hero p{color:var(--muted);font-size:15px;margin:8px 0 0}
+  .toggle{display:inline-flex;background:#fff;border:1px solid var(--line);border-radius:30px;padding:4px;margin-top:18px}
+  .toggle button{border:none;background:none;cursor:pointer;font-family:"Readex Pro";font-weight:600;font-size:13px;color:var(--muted);padding:8px 18px;border-radius:24px}
+  .toggle button.on{background:var(--navy);color:#fff}
+  .save{display:inline-block;margin-inline-start:8px;background:rgba(30,122,69,.12);color:var(--green);border-radius:20px;padding:3px 10px;font-size:11.5px;font-weight:600}
+
+  .plans{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;max-width:1000px;margin:22px auto;padding:0 18px}
+  .plan{background:#fff;border:1px solid var(--line);border-radius:16px;padding:20px 18px;display:flex;flex-direction:column;position:relative}
+  .plan.feat{border:2px solid var(--teal);box-shadow:0 14px 34px rgba(31,157,140,.16)}
+  .badge{position:absolute;top:-11px;inset-inline-start:50%;transform:translateX(50%);background:var(--teal);color:#fff;font-family:"Readex Pro";font-weight:600;font-size:11px;padding:3px 12px;border-radius:20px}
+  .pname{font-family:"Readex Pro";font-weight:700;font-size:16px;color:var(--navy)}
+  .pdesc{color:var(--muted);font-size:12px;margin:4px 0 12px;min-height:32px}
+  .price{font-family:"Readex Pro";font-weight:700;font-size:30px;color:var(--ink)}
+  .price small{font-size:13px;color:var(--muted);font-weight:400}
+  .feats{list-style:none;padding:0;margin:14px 0 16px;flex:1}
+  .feats li{font-size:12.7px;padding:5px 0;display:flex;gap:7px;align-items:flex-start;color:#33404f}
+  .feats li::before{content:"✓";color:var(--teal);font-weight:700;flex:none}
+  .feats li.no{color:#9aa6b4}.feats li.no::before{content:"—";color:#c2cad4}
+  .pbtn{border:none;cursor:pointer;border-radius:11px;padding:11px;font-family:"Readex Pro";font-weight:600;font-size:14px;width:100%}
+  .pbtn.primary{background:var(--navy);color:#fff}.pbtn.feat{background:var(--teal);color:#fff}.pbtn.ghost{background:#EEF1F5;color:var(--navy)}
+
+  .office{max-width:1000px;margin:6px auto 24px;padding:0 18px}
+  .ocard{background:linear-gradient(135deg,var(--navy),var(--navy2));color:#fff;border-radius:16px;padding:22px 24px;display:flex;flex-wrap:wrap;align-items:center;gap:16px}
+  .ocard h3{font-size:18px}.ocard p{color:#C4D2EA;font-size:13px;margin:5px 0 0;max-width:560px}
+  .ocard .sp{flex:1;min-width:20px}
+  .ocard .pbtn{width:auto;padding:11px 20px;background:var(--gold);color:#3a2e05}
+
+  .note{max-width:1000px;margin:0 auto 30px;padding:0 18px;color:var(--muted);font-size:12px;text-align:center;line-height:1.9}
+
+  /* modal */
+  .modal{position:fixed;inset:0;background:rgba(19,33,46,.55);display:none;align-items:center;justify-content:center;z-index:40;padding:16px}
+  .modal.show{display:flex}
+  .mcard{background:#fff;border-radius:16px;max-width:480px;width:100%;padding:22px}
+  .mcard h2{color:var(--navy);font-size:18px;margin-bottom:3px}
+  .mcard .sub{color:var(--muted);font-size:12.5px;margin-bottom:14px}
+  .summary{background:#F7F9FC;border:1px solid var(--line);border-radius:11px;padding:12px 14px;font-size:13.5px;margin-bottom:14px;display:flex;justify-content:space-between}
+  .summary b{color:var(--navy);font-family:"Readex Pro"}
+  .mysr-form{min-height:60px}
+  .banner{background:rgba(201,162,39,.14);color:#8a6d11;border-radius:10px;padding:11px 13px;font-size:12.5px;margin-bottom:12px;display:none}
+  .banner.show{display:block}
+  .mclose{background:none;border:none;cursor:pointer;color:var(--muted);font-size:13px;font-family:"Readex Pro";font-weight:600;margin-top:6px}
+  @media(max-width:880px){.plans{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:520px){.plans{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+  <div class="topbar"><div class="wrap tb">
+    <span class="logo"></span><span class="brand"><b>مُطابق</b><small>الباقات والاشتراك</small></span>
+    <span class="sp"></span>
+    <a class="lnk" href="/">لوحة القيادة</a>
+  </div></div>
+
+  <div class="hero">
+    <h1>اختر باقتك — وابدأ بحماية امتثالك</h1>
+    <p>حارس يراقب منشأتك عبر الجهات الستّ وينبّهك قبل الغرامة. ألغِ متى شئت.</p>
+    <div class="toggle">
+      <button id="mBtn" class="on" onclick="setCycle('month')">شهري</button>
+      <button id="yBtn" onclick="setCycle('year')">سنوي <span class="save">وفّر شهرين</span></button>
+    </div>
+  </div>
+
+  <div class="plans" id="plans"></div>
+
+  <div class="office">
+    <div class="ocard">
+      <div>
+        <h3>🏢 باقة مكاتب المحاسبة</h3>
+        <p>لوحة واحدة تدير عشرات المنشآت، تنبيهات مجمّعة، وتسعير حسب العدد. مثالية للمكاتب التي تدير امتثال عملائها.</p>
+      </div>
+      <span class="sp"></span>
+      <button class="pbtn" onclick="contactSales()">تواصل للتسعير</button>
+    </div>
+  </div>
+
+  <div class="note">
+    الأسعار بالريال السعودي، شاملة ضريبة القيمة المضافة عند الفوترة. الدفع عبر بوّابة Moyasar (مدى، Apple Pay، بطاقات).<br>
+    لا نخزّن بيانات بطاقتك — تُدار بأمان لدى البوّابة. يمكنك الإلغاء أو تغيير الباقة في أي وقت.
+  </div>
+
+  <!-- payment modal -->
+  <div class="modal" id="modal">
+    <div class="mcard">
+      <h2 id="mTitle">إتمام الاشتراك</h2>
+      <div class="sub">أدخل بيانات الدفع لتفعيل باقتك فوراً.</div>
+      <div class="banner" id="mBanner">وضع المعاينة: أضف مفتاح Moyasar العام لتفعيل الدفع الفعلي.</div>
+      <div class="summary"><span id="sumName">الباقة</span><b id="sumPrice">—</b></div>
+      <div class="mysr-form"></div>
+      <button class="mclose" onclick="closeModal()">إلغاء</button>
+    </div>
+  </div>
+
+<script>
+// ====== الإعداد: ضع مفاتيحك لتفعيل الدفع والاشتراك ======
+const MOYASAR_PUBLISHABLE_KEY = "pk_live_YOUR-MOYASAR-KEY";   // من لوحة Moyasar
+const CALLBACK_URL = window.location.origin + "/subscribe-callback"; // دالة Netlify تثبّت الاشتراك
+const SUPABASE_URL = "https://YOUR-PROJECT.supabase.co";
+const SUPABASE_ANON_KEY = "YOUR-ANON-KEY";
+// =========================================================
+const MOYASAR_READY = !MOYASAR_PUBLISHABLE_KEY.includes("YOUR-MOYASAR-KEY");
+
+let cycle = "month";
+const PLANS = [
+  { id:"free",  name:"مجاني",     desc:"للتجربة والبدء", month:0,   year:0,
+    feats:["منشأة واحدة","تنبيهات أساسية","درجة امتثال موحّدة"], no:["كل الجهات الستّ","تقارير مفصّلة","الحارس الآلي"], cta:"ابدأ مجاناً", kind:"ghost" },
+  { id:"basic", name:"أساسي",     desc:"لمنشأة واحدة", month:149, year:1490,
+    feats:["منشأة واحدة","كل الجهات الستّ","الحارس الآلي (تنبيه + تقرير)","إرسال بريد/واتساب"], no:["عدّة منشآت"], cta:"اشترك الآن", kind:"primary", feat:true, badge:"الأكثر طلباً" },
+  { id:"pro",   name:"احترافي",   desc:"لعدّة منشآت", month:399, year:3990,
+    feats:["حتى ٥ منشآت","كل مزايا الأساسي","تقارير متقدّمة وتنبّؤية","أولوية الدعم"], no:[], cta:"اشترك الآن", kind:"primary" },
+  { id:"office",name:"مكتب محاسبة",desc:"إدارة عملاء متعددين", month:null, year:null,
+    feats:["منشآت غير محدودة","لوحة مجمّعة للمكتب","تنبيهات لكل عميل","تسعير حسب العدد"], no:[], cta:"تواصل للتسعير", kind:"ghost" }
+];
+
+function fmt(n){ return n.toLocaleString('ar-SA'); }
+function priceLabel(pl){
+  if (pl.month===null) return '<span class="price" style="font-size:20px">حسب الطلب</span>';
+  if (pl.month===0) return '<span class="price">مجاناً</span>';
+  const amt = cycle==="month" ? pl.month : pl.year;
+  const unit = cycle==="month" ? "/شهر" : "/سنة";
+  return '<span class="price">'+fmt(amt)+' <small>ريال '+unit+'</small></span>';
+}
+function render(){
+  document.getElementById('plans').innerHTML = PLANS.map(pl=>{
+    const feats = pl.feats.map(f=>'<li>'+f+'</li>').join('') + (pl.no||[]).map(f=>'<li class="no">'+f+'</li>').join('');
+    const btnCls = pl.feat ? 'feat' : pl.kind;
+    return '<div class="plan'+(pl.feat?' feat':'')+'">'+
+      (pl.badge?'<span class="badge">'+pl.badge+'</span>':'')+
+      '<div class="pname">'+pl.name+'</div><div class="pdesc">'+pl.desc+'</div>'+
+      priceLabel(pl)+
+      '<ul class="feats">'+feats+'</ul>'+
+      '<button class="pbtn '+btnCls+'" onclick="choose(\''+pl.id+'\')">'+pl.cta+'</button>'+
+    '</div>';
+  }).join('');
+}
+function setCycle(c){ cycle=c; document.getElementById('mBtn').classList.toggle('on',c==='month'); document.getElementById('yBtn').classList.toggle('on',c==='year'); render(); }
+
+function choose(id){
+  const pl = PLANS.find(p=>p.id===id);
+  if (id==='free'){ window.location.href = "/auth.html"; return; }
+  if (id==='office'){ contactSales(); return; }
+  openCheckout(pl);
+}
+function contactSales(){ window.location.href = "mailto:sales@motabaq.app?subject=باقة%20مكتب%20محاسبة"; }
+
+function openCheckout(pl){
+  const amt = cycle==="month" ? pl.month : pl.year;
+  document.getElementById('mTitle').textContent = "اشتراك — باقة "+pl.name;
+  document.getElementById('sumName').textContent = "باقة "+pl.name+" ("+(cycle==='month'?'شهري':'سنوي')+")";
+  document.getElementById('sumPrice').textContent = fmt(amt)+" ريال";
+  document.getElementById('mBanner').classList.toggle('show', !MOYASAR_READY);
+  document.getElementById('modal').classList.add('show');
+  document.querySelector('.mysr-form').innerHTML = "";
+
+  if (MOYASAR_READY && window.Moyasar){
+    Moyasar.init({
+      element: '.mysr-form',
+      amount: amt*100,            // بالهللات
+      currency: 'SAR',
+      description: 'اشتراك مُطابق — '+pl.name+' ('+cycle+')',
+      publishable_api_key: MOYASAR_PUBLISHABLE_KEY,
+      callback_url: CALLBACK_URL + '?plan='+pl.id+'&cycle='+cycle,
+      methods: ['creditcard','applepay','stcpay'],
+      supported_networks: ['mada','visa','mastercard'],
+      // ملاحظة: لتفعيل التجديد التلقائي، فعّل Tokenization في حساب Moyasar
+      // ومرّر الخيار لإنشاء token يُخزَّن في جدول subscriptions ويُخصَم شهرياً عبر n8n.
+      apple_pay: { country: 'SA', label: 'Motabaq' },
+      on_completed: function(payment){ return Promise.resolve(payment); }
+    });
+  }
+}
+function closeModal(){ document.getElementById('modal').classList.remove('show'); }
+
+render();
+</script>
+</body>
+</html>

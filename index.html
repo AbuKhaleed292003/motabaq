@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>مُطابق — لوحة قيادة الامتثال</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Readex+Pro:wght@400;500;600;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root{
+    --bg:#EBEEF3;--ink:#19212E;--navy:#1B2A4A;--navy-2:#28406E;--teal:#1F9D8C;
+    --card:#FFFFFF;--line:#D8DEE7;--muted:#5E6B7E;
+    --band-red:#D64A4A;--band-low:#86B96B;--band-mid:#3F9D5A;--band-high:#1F7A45;--band-plat:#5C6B82;
+    --amber:#E0A12E;--wa:#25D366;
+    --shadow:0 1px 2px rgba(27,42,74,.05),0 10px 30px rgba(27,42,74,.08);--radius:16px;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:"IBM Plex Sans Arabic",system-ui,sans-serif;font-size:16px;line-height:1.7;-webkit-font-smoothing:antialiased}
+  h1,h2,h3{font-family:"Readex Pro",sans-serif;line-height:1.25}
+  .wrap{max-width:980px;margin:0 auto;padding:0 16px}
+  .topbar{background:var(--navy);color:#EDF1F7}
+  .topbar .wrap{display:flex;align-items:center;gap:11px;height:60px}
+  .logo{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,var(--teal),#15c3ab);position:relative;flex:none}
+  .logo::after{content:"";position:absolute;inset:9px auto auto 9px;width:9px;height:9px;border-radius:2px;background:var(--navy)}
+  .brand b{font-family:"Readex Pro";font-weight:700;font-size:18px}
+  .brand small{display:block;color:#9DB0CC;font-size:11.5px;font-weight:500;margin-top:-2px}
+  .topbar .right{margin-inline-start:auto;display:flex;align-items:center;gap:9px}
+  .csel{background:#24355A;color:#EDF1F7;border:1px solid #3A4E78;border-radius:9px;padding:8px 11px;font-family:inherit;font-size:13px}
+  .exp{background:rgba(31,157,140,.18);color:#7EE6D5;border:1px solid rgba(31,157,140,.4);border-radius:9px;padding:8px 12px;font-size:12.5px;font-weight:600;cursor:pointer}
+  .exp:hover{background:rgba(31,157,140,.3)}
+
+  .tabs{background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:20;overflow-x:auto}
+  .tabs .wrap{display:flex;gap:2px;min-width:max-content}
+  .tab{appearance:none;border:none;background:none;cursor:pointer;font-family:"Readex Pro";font-weight:600;font-size:14px;color:var(--muted);padding:14px 13px 12px;border-bottom:2.5px solid transparent;white-space:nowrap;display:flex;align-items:center;gap:6px}
+  .tab.active{color:var(--navy);border-bottom-color:var(--teal)}
+  @media(max-width:560px){.tab{font-size:12.5px;padding:12px 8px}}
+
+  .view{display:none;padding:22px 0 40px}.view.active{display:block}
+  .vhead{margin:0 0 16px}.vhead h1{font-size:clamp(20px,4vw,27px);margin:0 0 4px;font-weight:700}
+  .vhead p{margin:0;font-size:13.5px;color:var(--muted)}
+  .grid2{display:grid;grid-template-columns:1.3fr 1fr;gap:16px}
+  @media(max-width:760px){.grid2{grid-template-columns:1fr}}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow)}
+  .card h3{font-size:15px;margin:0 0 14px;font-weight:600;color:var(--navy)}
+
+  /* Overview score */
+  .scorewrap{display:flex;align-items:center;gap:22px;flex-wrap:wrap}
+  .ring{width:148px;height:148px;border-radius:50%;display:grid;place-items:center;flex:none;background:conic-gradient(var(--c,#1F9D8C) calc(var(--p,0)*1%),#E3E8EF 0)}
+  .ring .inner{width:116px;height:116px;background:#fff;border-radius:50%;display:grid;place-items:center;text-align:center}
+  .ring .num{font-family:"Readex Pro";font-size:36px;font-weight:700;line-height:1;color:var(--ink)}
+  .ring .of{font-size:12px;color:var(--muted)}
+  .scoremeta{flex:1;min-width:200px}
+  .scoremeta .st{font-family:"Readex Pro";font-size:19px;font-weight:700}
+  .scoremeta .sd{font-size:13.5px;color:var(--muted);margin-top:4px}
+
+  .pillars{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:18px}
+  @media(max-width:640px){.pillars{grid-template-columns:1fr}}
+  .pillar{border:1px solid var(--line);border-radius:13px;padding:15px;background:#fff}
+  .pillar .ph{display:flex;align-items:center;justify-content:space-between;margin-bottom:7px}
+  .pillar .pn{font-weight:600;font-size:14px}
+  .pillar .pv{font-family:"Readex Pro";font-size:20px;font-weight:700}
+  .pchip{font-size:11px;font-weight:600;padding:3px 9px;border-radius:999px;color:#fff}
+  .pillar .pd{font-size:12px;color:var(--muted)}
+
+  /* monitor */
+  .status{display:flex;align-items:center;gap:16px;margin-bottom:18px}
+  .badge{padding:14px 18px;border-radius:14px;color:#fff;text-align:center;min-width:124px}
+  .badge .lbl{font-size:12px;opacity:.9}.badge .nm{font-family:"Readex Pro";font-weight:700;font-size:19px;margin-top:2px}
+  .status .meta{flex:1}.status .rate{font-family:"Readex Pro";font-size:34px;font-weight:700;line-height:1}
+  .status .rate small{font-size:15px;color:var(--muted);font-weight:500}.status .sub{font-size:13px;color:var(--muted);margin-top:4px}
+  .gauge{direction:ltr;margin:8px 0 4px}
+  .bar{display:flex;height:26px;border-radius:8px;overflow:hidden;position:relative}
+  .seg{display:flex;align-items:center;justify-content:center;color:#fff;font-size:10.5px;font-weight:600}
+  .ticks{display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-top:5px;direction:ltr}
+  .marker{position:absolute;top:-7px;width:0;height:0;transform:translateX(-50%);border-left:7px solid transparent;border-right:7px solid transparent;border-top:9px solid var(--ink);z-index:3}
+  .reqline{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--ink);opacity:.55;z-index:2}
+  .kpis{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:22px}
+  .kpi{background:#F5F7FA;border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+  .kpi .v{font-family:"Readex Pro";font-size:22px;font-weight:700;color:var(--navy)}.kpi .v.warn{color:var(--band-red)}
+  .kpi .k{font-size:12px;color:var(--muted);margin-top:2px}
+  label{display:block;font-size:13px;font-weight:600;margin:0 0 6px;color:var(--ink)}
+  .field{margin-bottom:14px}
+  input[type=number],input[type=text],select.full{width:100%;font-family:inherit;font-size:16px;border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:#fff}
+  input:focus,textarea:focus,select:focus{outline:2px solid var(--teal);outline-offset:1px;border-color:transparent}
+  .stepper{display:flex;align-items:center;gap:8px}
+  .stepper button{width:38px;height:40px;border:1px solid var(--line);background:#F5F7FA;border-radius:9px;font-size:18px;cursor:pointer;color:var(--navy);font-weight:700}
+  .stepper input{text-align:center}
+  .whatif-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px dashed var(--line);font-size:14px}
+  .whatif-row:last-child{border-bottom:none}.whatif-row .num{font-family:"Readex Pro";font-weight:700;color:var(--navy);font-size:17px}
+  .risk{border-radius:12px;padding:13px 15px;font-size:14px;font-weight:500;margin-top:4px;display:flex;gap:9px;align-items:flex-start}
+  .risk.safe{background:rgba(31,157,140,.1);border:1px solid rgba(31,157,140,.35);color:#0d6b5f}
+  .risk.danger{background:rgba(214,74,74,.1);border:1px solid rgba(214,74,74,.35);color:#9c2b2b}
+  .risk b{font-family:"Readex Pro"}
+
+  /* ZATCA */
+  .zstat{display:flex;align-items:center;gap:14px;margin-bottom:8px}
+  .zbadge{padding:12px 18px;border-radius:13px;color:#fff;font-family:"Readex Pro";font-weight:700;font-size:16px}
+  .countdown{font-family:"Readex Pro";font-size:30px;font-weight:700}
+  .checkitem{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line);font-size:14px}
+  .checkitem:last-child{border-bottom:none}
+  .checkitem input{width:19px;height:19px;accent-color:var(--teal)}
+  .prog{height:9px;border-radius:99px;background:#E3E8EF;overflow:hidden;margin-top:6px}
+  .prog>i{display:block;height:100%;background:var(--teal);border-radius:99px}
+
+  /* switch + alerts */
+  .ruleline{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 0;border-bottom:1px solid var(--line)}
+  .ruleline:last-child{border-bottom:none}.ruleline .t{font-size:14px;font-weight:600}.ruleline .d{font-size:12px;color:var(--muted)}
+  .switch{position:relative;width:46px;height:26px;flex:none}.switch input{opacity:0;width:0;height:0}
+  .slider{position:absolute;inset:0;background:#C5CDD9;border-radius:999px;cursor:pointer;transition:.2s}
+  .slider::before{content:"";position:absolute;width:20px;height:20px;right:3px;top:3px;background:#fff;border-radius:50%;transition:.2s}
+  .switch input:checked + .slider{background:var(--teal)}.switch input:checked + .slider::before{transform:translateX(-20px)}
+  .alert{display:flex;gap:11px;align-items:flex-start;border:1px solid var(--line);border-radius:12px;padding:13px 15px;margin-bottom:10px;background:#fff}
+  .alert .dot{width:9px;height:9px;border-radius:50%;margin-top:7px;flex:none}
+  .alert.danger{border-color:rgba(214,74,74,.4);background:rgba(214,74,74,.04)}.alert.danger .dot{background:var(--band-red)}
+  .alert.warn{border-color:rgba(224,161,46,.45);background:rgba(224,161,46,.05)}.alert.warn .dot{background:var(--amber)}
+  .alert.ok{border-color:rgba(31,157,140,.4);background:rgba(31,157,140,.04)}.alert.ok .dot{background:var(--teal)}
+  .alert .ttl{font-weight:600;font-size:14px}.alert .msg{font-size:13px;color:var(--muted)}.alert .tm{font-size:11px;color:var(--muted);margin-top:3px}
+  .audit{font-size:12.5px;color:var(--muted);padding:7px 0;border-bottom:1px dashed var(--line)}
+  .audit:last-child{border-bottom:none}.audit b{color:var(--ink);font-weight:600}
+  .wabtn{background:var(--wa);color:#fff;border:none;border-radius:10px;padding:11px;width:100%;font-family:"Readex Pro";font-weight:600;font-size:14px;cursor:pointer;margin-top:8px;display:flex;align-items:center;justify-content:center;gap:8px;text-decoration:none}
+  .wabtn:hover{filter:brightness(.95)}
+
+  .go{margin-top:14px;width:100%;border:none;cursor:pointer;background:var(--navy);color:#fff;font-family:"Readex Pro";font-weight:600;font-size:15px;padding:13px;border-radius:11px;display:flex;align-items:center;justify-content:center;gap:8px}
+  .go:hover{background:#13203b}.go:disabled{opacity:.6;cursor:wait}
+  .loader{display:inline-block;width:16px;height:16px;border:2.5px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:sp .7s linear infinite}
+  @keyframes sp{to{transform:rotate(360deg)}}
+  .chat{display:flex;flex-direction:column;height:58vh;min-height:400px}
+  .msgs{flex:1;overflow-y:auto;padding:4px 2px;display:flex;flex-direction:column;gap:11px}
+  .bub{max-width:84%;padding:11px 14px;border-radius:14px;font-size:14px;line-height:1.7;white-space:pre-wrap}
+  .bub.user{align-self:flex-start;background:var(--navy);color:#fff;border-bottom-right-radius:5px}
+  .bub.ai{align-self:flex-end;background:#F1F4F8;border:1px solid var(--line);border-bottom-left-radius:5px}
+  .bub.ai.thinking{color:var(--muted)}
+  .chatbar{display:flex;gap:9px;margin-top:12px}
+  .chatbar textarea{flex:1;resize:none;font-family:inherit;font-size:15px;border:1px solid var(--line);border-radius:12px;padding:11px 13px;min-height:46px;max-height:120px}
+  .send{border:none;background:var(--teal);color:#fff;border-radius:12px;width:50px;cursor:pointer;font-size:18px}.send:disabled{opacity:.5}
+  .chips{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:10px}
+  .chip{border:1px solid var(--line);background:#fff;border-radius:999px;padding:6px 12px;font-size:12.5px;cursor:pointer;color:var(--navy)}
+  .chip:hover{border-color:var(--teal);color:var(--teal)}
+  .note{font-size:11.5px;color:var(--muted);margin-top:16px;line-height:1.6;background:#F5F7FA;border:1px solid var(--line);border-radius:10px;padding:11px 13px}
+
+  /* print report */
+  #printReport{display:none}
+  @media print{
+    .topbar,.tabs,.view,.note{display:none!important}
+    body{background:#fff}
+    #printReport{display:block;padding:10px}
+    #printReport h2{font-size:22px;margin:0 0 4px}
+    #printReport .pr-line{font-size:13px;color:#333;margin:2px 0}
+    #printReport table{width:100%;border-collapse:collapse;margin-top:14px;font-size:13px}
+    #printReport th,#printReport td{border:1px solid #ccc;padding:8px;text-align:right}
+    #printReport th{background:#f0f3f7}
+  }
+  @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+  <div class="topbar"><div class="wrap">
+    <span class="logo"></span>
+    <span class="brand"><b>مُطابق</b><small>لوحة قيادة الامتثال</small></span>
+    <span class="right">
+      <select class="csel" id="companySel" onchange="switchCompany(this.value)"></select>
+      <button class="exp" onclick="exportReport()">⬇ تقرير PDF</button>
+      <button class="exp" id="logoutBtn" onclick="logout()" style="display:none">↩ خروج</button>
+    </span>
+  </div></div>
+
+  <div class="tabs"><div class="wrap">
+    <button class="tab active" data-v="overview" onclick="showView('overview')">🧭 نظرة عامة</button>
+    <button class="tab" data-v="monitor" onclick="showView('monitor')">📊 مراقب نطاقات</button>
+    <button class="tab" data-v="zatca" onclick="showView('zatca')">🧾 فاتورة (ZATCA)</button>
+    <button class="tab" data-v="alerts" onclick="showView('alerts')">🔔 التنبيهات</button>
+    <button class="tab" data-v="copilot" onclick="showView('copilot')">◈ المساعد الذكي</button>
+  </div></div>
+
+  <div class="wrap">
+
+    <!-- OVERVIEW -->
+    <section class="view active" id="view-overview">
+      <div class="vhead"><h1>نظرة عامة على الامتثال</h1><p>مؤشر صحة امتثال موحّد يجمع ركائز المنشأة في رقم واحد.</p></div>
+      <div class="card">
+        <div class="scorewrap">
+          <div class="ring" id="ring"><div class="inner"><div><div class="num" id="scoreNum">0</div><div class="of">من 100</div></div></div></div>
+          <div class="scoremeta"><div class="st" id="scoreState">—</div><div class="sd" id="scoreDesc">—</div></div>
+        </div>
+        <div class="pillars">
+          <div class="pillar"><div class="ph"><span class="pn">نطاقات (السعودة)</span><span class="pchip" id="pNitChip">—</span></div><div class="pv" id="pNitVal">—</div><div class="pd" id="pNitDesc">—</div></div>
+          <div class="pillar"><div class="ph"><span class="pn">فاتورة (ZATCA)</span><span class="pchip" id="pZatChip">—</span></div><div class="pv" id="pZatVal">—</div><div class="pd" id="pZatDesc">—</div></div>
+          <div class="pillar"><div class="ph"><span class="pn">التأمينات (GOSI)</span><span class="pchip" style="background:var(--muted)">قريباً</span></div><div class="pv" style="color:var(--muted)">—</div><div class="pd">قيد الربط — يُضاف عند توفّر التكامل.</div></div>
+          <div class="pillar"><div class="ph"><span class="pn">الرخصة البلدية (بلدي)</span><span class="pchip" style="background:var(--muted)">قريباً</span></div><div class="pv" style="color:var(--muted)">—</div><div class="pd">مراقبة انتهاء الرخصة والمخالفات — يُضاف عند توفّر التكامل.</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- MONITOR -->
+    <section class="view" id="view-monitor">
+      <div class="vhead"><h1>حالة التوطين والامتثال</h1><p>راقب لون منشأتك في نطاقات لحظياً، واعرف بُعدك عن الانزلاق قبل وقوعه.</p></div>
+      <div class="grid2">
+        <div class="card">
+          <div class="status">
+            <div class="badge" id="badge"><div class="lbl">الفئة الحالية</div><div class="nm" id="badgeName">—</div></div>
+            <div class="meta"><div class="rate"><span id="rateVal">0</span><small>%</small></div><div class="sub">نسبة التوطين الحالية</div></div>
+          </div>
+          <div class="gauge"><div class="bar" id="bar"><div class="reqline" id="reqline"></div><div class="marker" id="marker"></div></div>
+            <div class="ticks" id="ticks"></div></div>
+          <div id="riskBanner" class="risk safe" style="margin-top:20px">—</div>
+          <div class="kpis">
+            <div class="kpi"><div class="v" id="kTotal">0</div><div class="k">إجمالي الموظفين</div></div>
+            <div class="kpi"><div class="v" id="kSaudi">0</div><div class="k">الموظفون السعوديون</div></div>
+            <div class="kpi"><div class="v" id="kNeed">0</div><div class="k">سعوديون للفئة الأعلى</div></div>
+            <div class="kpi"><div class="v" id="kBuffer">0</div><div class="k">وافدون قبل الانزلاق</div></div>
+          </div>
+        </div>
+        <div class="card">
+          <h3>بيانات المنشأة</h3>
+          <div class="field"><label>الموظفون السعوديون</label>
+            <div class="stepper"><button onclick="bump('saudi',-1)">−</button><input type="number" id="saudi" min="0" oninput="syncFromInputs()"><button onclick="bump('saudi',1)">+</button></div></div>
+          <div class="field"><label>الموظفون الوافدون</label>
+            <div class="stepper"><button onclick="bump('expat',-1)">−</button><input type="number" id="expat" min="0" oninput="syncFromInputs()"><button onclick="bump('expat',1)">+</button></div></div>
+          <h3 style="margin-top:8px">محاكاة سريعة (ماذا لو؟)</h3>
+          <div class="whatif-row"><span>لو وظّفت سعودياً واحداً</span><span class="num" id="wHire">—</span></div>
+          <div class="whatif-row"><span>لو غادر سعودي واحد</span><span class="num" id="wLeave">—</span></div>
+          <div class="whatif-row"><span>الفئة التالية المستهدفة</span><span class="num" id="wNext">—</span></div>
+          <h3 style="margin-top:16px">حدود الفئات (حسب نشاطك)</h3>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <div><label>أخضر منخفض %</label><input type="number" id="t1" value="10" min="0"></div>
+            <div><label>أخضر متوسط % (الآمن)</label><input type="number" id="t2" value="16" min="0"></div>
+            <div><label>أخضر مرتفع %</label><input type="number" id="t3" value="22" min="0"></div>
+            <div><label>بلاتيني %</label><input type="number" id="t4" value="30" min="0"></div>
+          </div>
+          <button class="go" style="margin-top:10px;background:var(--teal)" onclick="applyThresholds()">تطبيق حدود نشاطي</button>
+        </div>
+      </div>
+      <div class="note">ℹ️ منذ «نطاقات المطوّر» (ديسمبر 2021) لا توجد نسب موحّدة: الفئة تُحسب حسب نشاط المنشأة وحجمها، وبمقارنتها بنظرائها في نفس النشاط، عبر «دليل نطاقات التفاعلي» في منصة قوى. لذلك أدخِل حدود نشاطك في الحقول أعلاه لتعكس وضعك الفعلي.</div>
+    </section>
+
+    <!-- ZATCA -->
+    <section class="view" id="view-zatca">
+      <div class="vhead"><h1>الفوترة الإلكترونية (فاتورة / ZATCA)</h1><p>تابع جاهزية الربط مع منصة فاتورة وموعد موجتك.</p></div>
+      <div class="grid2">
+        <div class="card">
+          <h3>حالة الربط</h3>
+          <div class="zstat"><span class="zbadge" id="zBadge">—</span><div><div style="font-size:12px;color:var(--muted)">الموجة</div><div style="font-family:Readex Pro;font-weight:700" id="zWave">—</div></div></div>
+          <div style="margin-top:14px"><div style="font-size:12px;color:var(--muted)">المتبقي على الموعد النهائي</div>
+            <div class="countdown" id="zDays">—</div></div>
+          <div id="zNote" class="risk safe" style="margin-top:8px">—</div>
+        </div>
+        <div class="card">
+          <h3>قائمة جاهزية الربط</h3>
+          <div class="checkitem"><input type="checkbox" id="z1" onchange="zReady()"><label style="margin:0">حلّ فوترة متوافق مع ZATCA</label></div>
+          <div class="checkitem"><input type="checkbox" id="z2" onchange="zReady()"><label style="margin:0">إصدار شهادة CSID</label></div>
+          <div class="checkitem"><input type="checkbox" id="z3" onchange="zReady()"><label style="margin:0">رمز QR والتوقيع الرقمي</label></div>
+          <div class="checkitem"><input type="checkbox" id="z4" onchange="zReady()"><label style="margin:0">الربط الفعلي مع منصة فاتورة (API)</label></div>
+          <div style="margin-top:14px;font-size:13px">نسبة الجاهزية: <b id="zPct">0%</b></div>
+          <div class="prog"><i id="zBar" style="width:0%"></i></div>
+        </div>
+      </div>
+      <div class="note">⚠️ بيانات الموجات والمواعيد توضيحية — تُحدّث من إعلانات هيئة الزكاة والضريبة والجمارك الرسمية.</div>
+    </section>
+
+    <!-- ALERTS -->
+    <section class="view" id="view-alerts">
+      <div class="vhead"><h1>مركز التنبيهات</h1><p>اضبط قواعد التنبيه وقنواته، وتابع السجلّ وأثر التدقيق.</p></div>
+      <div class="grid2">
+        <div class="card">
+          <h3>قواعد التنبيه</h3>
+          <div class="ruleline"><div><div class="t">تنبيه الحد الآمن</div><div class="d">إذا نزلت النسبة تحت 16%</div></div><label class="switch"><input type="checkbox" id="ruleSafe" checked onchange="renderAlerts()"><span class="slider"></span></label></div>
+          <div class="ruleline"><div><div class="t">تنبيه هامش الوافدين</div><div class="d">إذا ضاق هامش إضافة الوافدين</div></div><label class="switch"><input type="checkbox" id="ruleBuffer" checked onchange="renderAlerts()"><span class="slider"></span></label></div>
+          <div class="ruleline"><div><div class="t">تنبيه موعد فاتورة</div><div class="d">إذا اقترب موعد الربط (≤ 30 يوماً)</div></div><label class="switch"><input type="checkbox" id="ruleZatca" checked onchange="renderAlerts()"><span class="slider"></span></label></div>
+          <div class="field" style="margin-top:14px"><label>حدّ تحذير هامش الوافدين</label><input type="number" id="bufferLimit" value="2" min="0" oninput="renderAlerts()"></div>
+          <div class="field"><label>قناة التنبيه</label><select class="full" id="channel"><option>واتساب</option><option>داخل التطبيق</option><option>Slack</option><option>البريد الإلكتروني</option></select></div>
+          <button class="go" onclick="runCheck()">🔍 تشغيل فحص الآن</button>
+          <div class="field" style="margin-top:16px"><label>إرسال آخر تنبيه عبر واتساب</label><input type="text" id="waNum" placeholder="رقم بصيغة دولية مثل 9665XXXXXXXX"></div>
+          <a class="wabtn" id="waBtn" href="#" target="_blank" rel="noopener" onclick="return openWA()">📲 إرسال عبر واتساب</a>
+        </div>
+        <div class="card">
+          <h3>سجلّ التنبيهات</h3>
+          <div id="alertFeed"></div>
+          <h3 style="margin-top:18px">سجلّ التدقيق</h3>
+          <div id="auditFeed"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- COPILOT -->
+    <section class="view" id="view-copilot">
+      <div class="vhead"><h1>المساعد الذكي</h1><p>اسأل عن امتثال منشأتك — المساعد يعرف أرقام السعودة والفوترة الحالية.</p></div>
+      <div class="card">
+        <div class="chips">
+          <button class="chip" onclick="ask(this.textContent)">كيف أرفع نطاقي خلال 3 أشهر؟</button>
+          <button class="chip" onclick="ask(this.textContent)">ما أثر تسريح موظف سعودي؟</button>
+          <button class="chip" onclick="ask(this.textContent)">ما المخاطر القريبة على منشأتي؟</button>
+        </div>
+        <div class="chat"><div class="msgs" id="msgs"></div>
+          <div class="chatbar"><textarea id="chatInput" placeholder="اكتب سؤالك هنا…" rows="1" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChat();}"></textarea><button class="send" id="sendBtn" onclick="sendChat()">➤</button></div>
+        </div>
+      </div>
+      <div class="note">يعمل المساعد عبر وسيط آمن (Netlify Function) يحفظ مفتاح الـAPI في متغيّر بيئة ANTHROPIC_API_KEY ولا يكشفه في المتصفح.</div>
+    </section>
+  </div>
+
+  <!-- PRINT REPORT -->
+  <div id="printReport"></div>
+
+<script>
+const BANDS=[{min:0,name:'أحمر',color:'var(--band-red)',sc:25},{min:10,name:'أخضر منخفض',color:'var(--band-low)',sc:55},{min:16,name:'أخضر متوسط',color:'var(--band-mid)',sc:78},{min:22,name:'أخضر مرتفع',color:'var(--band-high)',sc:92},{min:30,name:'بلاتيني',color:'var(--band-plat)',sc:100}];
+let SAFE_MIN=16,SCALE_MAX=35;
+
+// multi-tenant data (in-memory)
+const COMPANIES={
+  c1:{name:'شركة المثال للمقاولات',saudi:5,expat:35,zWave:'الموجة 21 (إيراد > 1.25 مليون)',zDays:18,zInteg:false},
+  c2:{name:'مؤسسة البناء الحديث',saudi:14,expat:26,zWave:'الموجة 17 (إيراد > 2.5 مليون)',zDays:0,zInteg:true},
+  c3:{name:'مجموعة الإعمار القابضة',saudi:42,expat:58,zWave:'مكتملة',zDays:0,zInteg:true}
+};
+let cur='c1';
+
+// ====== Supabase (اختياري): ضع مفاتيح مشروعك لتفعيل الدخول والبيانات الحيّة ======
+const SUPABASE_URL = "https://YOUR-PROJECT.supabase.co";
+const SUPABASE_ANON_KEY = "YOUR-ANON-KEY";
+const AUTH_PAGE = "/auth.html";
+const SB_CONFIGURED = !SUPABASE_URL.includes("YOUR-PROJECT") && !SUPABASE_ANON_KEY.includes("YOUR-ANON");
+let sb = null;
+try { if (window.supabase && SB_CONFIGURED) sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); } catch(e){}
+
+async function loadCompaniesFromDB(){
+  const { data: ests, error } = await sb.from('establishments').select('id,name');
+  if (error || !ests || !ests.length) return false;
+  const { data: items } = await sb.from('compliance_items').select('establishment_id,authority,data');
+  const byEst = {};
+  (items||[]).forEach(it=>{ (byEst[it.establishment_id]=byEst[it.establishment_id]||{})[it.authority]=it.data||{}; });
+  Object.keys(COMPANIES).forEach(k=>delete COMPANIES[k]);
+  ests.forEach(e=>{
+    const d=byEst[e.id]||{}, n=d.nitaqat||{}, z=d.einvoice||{};
+    COMPANIES[e.id]={ name:e.name, saudi:Number(n.saudi)||0, expat:Number(n.expat)||0,
+      zWave:z.wave||'—', zDays:Number(z.days)||0, zInteg:!!z.integrated };
+  });
+  cur = ests[0].id;
+  return true;
+}
+
+async function logout(){ try{ if(sb) await sb.auth.signOut(); }catch(e){} window.location.href = AUTH_PAGE; }
+
+function bandOf(r){let b=BANDS[0];for(const x of BANDS){if(r>=x.min)b=x;}return b;}
+function nextBand(r){return BANDS.find(x=>x.min>r)||null;}
+function saudiNeeded(s,t,p){p/=100;if(t>0&&s/t>=p)return 0;return Math.max(0,Math.ceil((p*t-s)/(1-p)));}
+function expatBuffer(s,t,lb){lb/=100;if(lb<=0)return 99;return Math.max(0,Math.floor(s/lb)-t);}
+function co(){return COMPANIES[cur];}
+function state(){const c=co();const total=c.saudi+c.expat;const rate=total>0?c.saudi/total*100:0;return{saudi:c.saudi,expat:c.expat,total,rate,band:bandOf(rate),next:nextBand(rate)};}
+
+// ZATCA sub-score
+function zScore(){const c=co();if(c.zInteg)return 100;if(c.zDays>30)return 65;if(c.zDays>=7)return 45;return 25;}
+function unifiedScore(){const s=state();return Math.round(0.5*s.band.sc+0.5*zScore());}
+
+/* nav */
+function showView(v){
+  document.querySelectorAll('.view').forEach(s=>s.classList.remove('active'));
+  document.getElementById('view-'+v).classList.add('active');
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.v===v));
+  if(v==='alerts')renderAlerts(); if(v==='overview')renderOverview(); if(v==='zatca')renderZatca();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+/* company switch */
+function buildCompanySel(){
+  document.getElementById('companySel').innerHTML=Object.entries(COMPANIES).map(([k,c])=>'<option value="'+k+'"'+(k===cur?' selected':'')+'>'+c.name+'</option>').join('');
+}
+function switchCompany(k){cur=k;syncInputsFromState();audit('تبديل المنشأة إلى: '+co().name);recompute();renderOverview();renderZatca();renderAlerts();}
+function syncInputsFromState(){document.getElementById('saudi').value=co().saudi;document.getElementById('expat').value=co().expat;}
+function syncFromInputs(){co().saudi=parseInt(document.getElementById('saudi').value)||0;co().expat=parseInt(document.getElementById('expat').value)||0;recompute();renderOverview();}
+function bump(id,d){const el=document.getElementById(id);el.value=Math.max(0,(parseInt(el.value)||0)+d);syncFromInputs();}
+
+/* monitor */
+function recompute(){
+  const s=state();
+  document.getElementById('rateVal').textContent=s.rate.toFixed(1);
+  document.getElementById('kTotal').textContent=s.total;
+  document.getElementById('kSaudi').textContent=s.saudi;
+  const badge=document.getElementById('badge');badge.style.background=s.band.color;
+  document.getElementById('badgeName').textContent=s.band.name;
+  document.getElementById('marker').style.left=Math.min(100,s.rate/SCALE_MAX*100)+'%';
+  document.getElementById('reqline').style.left=(SAFE_MIN/SCALE_MAX*100)+'%';
+  document.getElementById('kNeed').textContent=s.next?saudiNeeded(s.saudi,s.total,s.next.min):'✓';
+  const buf=expatBuffer(s.saudi,s.total,SAFE_MIN);
+  const be=document.getElementById('kBuffer');be.textContent=buf;be.className='v'+(buf<=1?' warn':'');
+  const rb=document.getElementById('riskBanner');
+  if(s.rate<SAFE_MIN){rb.className='risk danger';rb.innerHTML='⚠️ <span><b>تحذير:</b> تحت الحد الآمن. وظّف '+saudiNeeded(s.saudi,s.total,SAFE_MIN)+' سعودي/سعوديين للوصول للفئة الآمنة.</span>';}
+  else{rb.className='risk safe';rb.innerHTML='✅ <span><b>وضع آمن:</b> ضمن النطاق الأخضر. الهامش: '+buf+' وافد قبل الاقتراب من الانزلاق.</span>';}
+  const rH=(s.total+1)>0?((s.saudi+1)/(s.total+1)*100):0,rL=(s.total-1)>0?((s.saudi-1)/(s.total-1)*100):0;
+  document.getElementById('wHire').textContent=rH.toFixed(1)+'% ('+bandOf(rH).name+')';
+  document.getElementById('wLeave').textContent=s.saudi>0?rL.toFixed(1)+'% ('+bandOf(rL).name+')':'—';
+  document.getElementById('wNext').textContent=s.next?s.next.name+' عند '+s.next.min+'%':'أعلى فئة ✓';
+}
+function renderGauge(){
+  const bar=document.getElementById('bar');
+  bar.querySelectorAll('.seg').forEach(e=>e.remove());
+  SCALE_MAX=Math.max(35,BANDS[BANDS.length-1].min+5);
+  const stops=[...BANDS.map(b=>b.min),SCALE_MAX];
+  for(let i=0;i<BANDS.length;i++){const w=(stops[i+1]-stops[i])/SCALE_MAX*100;const seg=document.createElement('div');
+    seg.className='seg';seg.style.flex='0 0 '+w+'%';seg.style.background=BANDS[i].color;seg.textContent=BANDS[i].name;bar.insertBefore(seg,bar.firstChild);}
+  document.getElementById('ticks').innerHTML=[...BANDS.map(b=>b.min),SCALE_MAX].map(v=>'<span>'+v+'%</span>').join('');
+}
+function applyThresholds(){
+  const t1=+document.getElementById('t1').value||0,t2=+document.getElementById('t2').value||0,t3=+document.getElementById('t3').value||0,t4=+document.getElementById('t4').value||0;
+  BANDS[1].min=t1;BANDS[2].min=t2;BANDS[3].min=t3;BANDS[4].min=t4;SAFE_MIN=t2;
+  renderGauge();recompute();renderOverview();renderAlerts();
+}
+
+/* overview */
+function scoreColor(p){return p>=80?'var(--teal)':p>=60?'var(--amber)':'var(--band-red)';}
+function renderOverview(){
+  const s=state();const sc=unifiedScore();const col=scoreColor(sc);
+  const ring=document.getElementById('ring');ring.style.setProperty('--p',sc);ring.style.setProperty('--c',col);
+  document.getElementById('scoreNum').textContent=sc;
+  const st=document.getElementById('scoreState'),sd=document.getElementById('scoreDesc');
+  if(sc>=80){st.textContent='امتثال قوي';st.style.color='var(--teal)';sd.textContent='منشأتك في وضع جيد عبر الركائز المرصودة.';}
+  else if(sc>=60){st.textContent='امتثال متوسط — انتبه';st.style.color='var(--amber)';sd.textContent='توجد ركيزة أو أكثر تحتاج إجراءً قريباً.';}
+  else{st.textContent='امتثال ضعيف — إجراء عاجل';st.style.color='var(--band-red)';sd.textContent='مخاطر قريبة قد تعطّل خدمات منشأتك.';}
+  // pillars
+  const nc=document.getElementById('pNitChip');nc.style.background=s.band.color;nc.textContent=s.band.name;
+  document.getElementById('pNitVal').textContent=s.rate.toFixed(1)+'%';
+  document.getElementById('pNitDesc').textContent=s.rate<SAFE_MIN?'تحت الحد الآمن':'ضمن النطاق الأخضر';
+  const c=co();const zs=zScore();const zc=document.getElementById('pZatChip');
+  zc.style.background=zs>=80?'var(--teal)':zs>=50?'var(--amber)':'var(--band-red)';
+  zc.textContent=c.zInteg?'مكتمل':'غير مربوط';
+  document.getElementById('pZatVal').textContent=c.zInteg?'✓ مربوط':(c.zDays+' يوم');
+  document.getElementById('pZatDesc').textContent=c.zInteg?'مكتمل الربط مع فاتورة':'المتبقي على الموعد النهائي';
+}
+
+/* zatca */
+function renderZatca(){
+  const c=co();const zb=document.getElementById('zBadge');
+  zb.textContent=c.zInteg?'مربوط ✓':'غير مربوط';zb.style.background=c.zInteg?'var(--teal)':'var(--band-red)';
+  document.getElementById('zWave').textContent=c.zWave;
+  document.getElementById('zDays').textContent=c.zInteg?'مكتمل':(c.zDays+' يوم');
+  const zn=document.getElementById('zNote');
+  if(c.zInteg){zn.className='risk safe';zn.textContent='✅ تم الربط مع منصة فاتورة. لا إجراء مطلوب.';}
+  else if(c.zDays<=30){zn.className='risk danger';zn.textContent='⚠️ الموعد قريب ('+c.zDays+' يوماً). أكمل الربط لتفادي الغرامات.';}
+  else{zn.className='risk safe';zn.textContent='الموعد بعيد نسبياً — جهّز الربط مبكراً.';}
+  zReady();
+}
+function zReady(){
+  const ids=['z1','z2','z3','z4'];const done=ids.filter(i=>document.getElementById(i).checked).length;
+  const pct=Math.round(done/ids.length*100);
+  document.getElementById('zPct').textContent=pct+'%';document.getElementById('zBar').style.width=pct+'%';
+}
+
+/* alerts + audit */
+let alertHistory=[],auditLog=[];
+function audit(txt){auditLog.unshift({t:new Date().toLocaleString('ar-SA'),txt});renderAudit();}
+function renderAudit(){document.getElementById('auditFeed').innerHTML=auditLog.length?auditLog.slice(0,12).map(a=>'<div class="audit"><b>'+a.t+'</b> — '+a.txt+'</div>').join(''):'<div class="audit">لا سجلّات بعد.</div>';}
+function evalAlerts(){
+  const s=state();const c=co();const out=[];
+  if(document.getElementById('ruleSafe').checked&&s.rate<SAFE_MIN)
+    out.push({sev:'danger',ttl:'نطاقات: تحت الحد الآمن',msg:'النسبة '+s.rate.toFixed(1)+'% < 16%. يلزم '+saudiNeeded(s.saudi,s.total,SAFE_MIN)+' سعودي.'});
+  const lim=parseInt(document.getElementById('bufferLimit').value)||0;const buf=expatBuffer(s.saudi,s.total,SAFE_MIN);
+  if(document.getElementById('ruleBuffer').checked&&s.rate>=SAFE_MIN&&buf<=lim)
+    out.push({sev:'warn',ttl:'نطاقات: هامش الوافدين ضيّق',msg:'يمكن إضافة '+buf+' وافد فقط قبل الانزلاق.'});
+  if(document.getElementById('ruleZatca').checked&&!c.zInteg&&c.zDays<=30)
+    out.push({sev:'danger',ttl:'فاتورة: الموعد قريب',msg:'المتبقي '+c.zDays+' يوماً لإكمال الربط مع منصة فاتورة.'});
+  if(out.length===0)out.push({sev:'ok',ttl:'لا تنبيهات نشطة',msg:'المنشأة ضمن الوضع الآمن وفق القواعد الحالية.'});
+  return out;
+}
+function renderAlerts(){
+  const live=evalAlerts();const all=[...live.map(a=>({...a,tm:'الآن (مباشر)'})),...alertHistory];
+  document.getElementById('alertFeed').innerHTML=all.map(a=>'<div class="alert '+a.sev+'"><span class="dot"></span><div><div class="ttl">'+a.ttl+'</div><div class="msg">'+a.msg+'</div><div class="tm">'+a.tm+'</div></div></div>').join('');
+  renderAudit();
+}
+function runCheck(){const ch=document.getElementById('channel').value;const t=new Date().toLocaleString('ar-SA');
+  evalAlerts().forEach(a=>alertHistory.unshift({...a,tm:'فحص يدوي · '+ch+' · '+t}));
+  audit('تشغيل فحص يدوي عبر قناة: '+ch);renderAlerts();}
+function lastAlertText(){const a=evalAlerts()[0];return '🚨 تنبيه مُطابق — '+co().name+'\n'+a.ttl+'\n'+a.msg;}
+function openWA(){
+  const num=(document.getElementById('waNum').value||'').replace(/[^0-9]/g,'');
+  const txt=encodeURIComponent(lastAlertText());
+  const url='https://wa.me/'+num+'?text='+txt;
+  document.getElementById('waBtn').href=url;audit('إرسال تنبيه عبر واتساب'+(num?(' إلى '+num):''));
+  return true;
+}
+
+/* copilot */
+let chatHistory=[];
+function pushMsg(role,text,thinking){const w=document.getElementById('msgs');const d=document.createElement('div');
+  d.className='bub '+(role==='user'?'user':'ai')+(thinking?' thinking':'');d.textContent=text;w.appendChild(d);w.scrollTop=w.scrollHeight;return d;}
+pushMsg('ai','أهلاً! أنا مساعد الامتثال في مُطابق. أعرف أرقام السعودة والفوترة لمنشأتك الحالية. اسألني أو اختر سؤالاً جاهزاً.');
+function ask(q){document.getElementById('chatInput').value=q;sendChat();}
+async function sendChat(){
+  const inp=document.getElementById('chatInput');const q=inp.value.trim();if(!q)return;
+  inp.value='';pushMsg('user',q);chatHistory.push({role:'user',content:q});
+  const btn=document.getElementById('sendBtn');btn.disabled=true;const thinking=pushMsg('ai','…يفكّر',true);
+  const s=state();const c=co();
+  const sys='أنت مساعد امتثال وتوطين سعودي ضمن منصة مُطابق. أجب بالعربية بإيجاز وعملية. المنشأة: '+c.name+'. إجمالي الموظفين '+s.total+'، سعوديون '+s.saudi+'، وافدون '+s.expat+'، نسبة التوطين '+s.rate.toFixed(1)+'%، فئة نطاقات '+s.band.name+'. حالة فاتورة (ZATCA): '+(c.zInteg?'مربوطة':('غير مربوطة، متبقٍ '+c.zDays+' يوماً'))+'. الحدود توضيحية. استند لهذه الأرقام.';
+  try{
+    const res=await fetch("/.netlify/functions/claude",{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({system:sys,messages:chatHistory})});
+    if(!res.ok)throw new Error("HTTP "+res.status);
+    const data=await res.json();const txt=data.content.filter(b=>b.type==="text").map(b=>b.text).join("\n").trim();
+    thinking.classList.remove('thinking');thinking.textContent=txt;chatHistory.push({role:'assistant',content:txt});
+  }catch(e){thinking.classList.remove('thinking');thinking.textContent="تعذّر الاتصال بالمساعد ("+e.message+"). يعمل داخل claude.ai؛ وعلى Netlify عبر وسيط آمن.";}
+  finally{btn.disabled=false;}
+}
+
+/* export PDF */
+function exportReport(){
+  const s=state();const c=co();const sc=unifiedScore();
+  document.getElementById('printReport').innerHTML=
+    '<h2>تقرير امتثال — مُطابق</h2>'+
+    '<div class="pr-line">المنشأة: '+c.name+'</div>'+
+    '<div class="pr-line">التاريخ: '+new Date().toLocaleDateString('ar-SA')+'</div>'+
+    '<div class="pr-line">مؤشر الامتثال الموحّد: '+sc+' / 100</div>'+
+    '<table><tr><th>الركيزة</th><th>الحالة</th><th>التفصيل</th></tr>'+
+    '<tr><td>نطاقات (السعودة)</td><td>'+s.band.name+'</td><td>نسبة '+s.rate.toFixed(1)+'% ('+s.saudi+' سعودي من '+s.total+')</td></tr>'+
+    '<tr><td>فاتورة (ZATCA)</td><td>'+(c.zInteg?'مربوط':'غير مربوط')+'</td><td>'+(c.zInteg?'مكتمل':('متبقٍ '+c.zDays+' يوماً — '+c.zWave))+'</td></tr>'+
+    '<tr><td>التأمينات (GOSI)</td><td>قيد الربط</td><td>—</td></tr>'+
+    '<tr><td>الرخصة البلدية (بلدي)</td><td>قيد الربط</td><td>—</td></tr>'+
+    '</table><div class="pr-line" style="margin-top:12px;color:#777">الحدود والبيانات توضيحية — تقرير تجريبي من مُطابق.</div>';
+  audit('تصدير تقرير PDF');
+  window.print();
+}
+
+/* init */
+async function boot(){
+  if (SB_CONFIGURED && sb){
+    try {
+      const { data } = await sb.auth.getSession();
+      if (!data || !data.session){ window.location.href = AUTH_PAGE; return; }
+      document.getElementById('logoutBtn').style.display='';
+      await loadCompaniesFromDB();   // إن لم توجد بيانات يبقى الديمو
+    } catch(e){ /* أكمل بالديمو */ }
+  }
+  buildCompanySel();syncInputsFromState();renderGauge();recompute();renderOverview();
+}
+boot();
+</script>
+</body>
+</html>
